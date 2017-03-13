@@ -10,7 +10,7 @@ module.exports = function () {
     usernameField: 'email',
     passwordField: 'password'
   },
-  function (email, password, done) {
+  function (email, password, done) {  
     User.findOne({
       email: email.toLowerCase()
     }, function (err, user) {

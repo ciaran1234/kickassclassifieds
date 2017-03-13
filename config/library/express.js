@@ -77,24 +77,24 @@ module.exports.initMiddleware = function (app) {
 /**
  * Configure Express session
  */
-module.exports.initSession = function (app, db) {
-    // Express MongoDB session storage
-    app.use(session({
-        saveUninitialized: true,
-        resave: true,
-        secret: config.sessionSecret,
-        cookie: {
-            maxAge: config.sessionCookie.maxAge,
-            httpOnly: config.sessionCookie.httpOnly,
-            secure: config.sessionCookie.secure && config.secure.ssl
-        },
-        key: config.sessionKey,
-        store: new MongoStore({
-            mongooseConnection: db.connection,
-            collection: config.sessionCollection
-        })
-    }));
-};
+// module.exports.initSession = function (app, db) {
+//     // Express MongoDB session storage
+//     app.use(session({
+//         saveUninitialized: true,
+//         resave: true,
+//         secret: config.sessionSecret,
+//         cookie: {
+//             maxAge: config.sessionCookie.maxAge,
+//             httpOnly: config.sessionCookie.httpOnly,
+//             secure: config.sessionCookie.secure && config.secure.ssl
+//         },
+//         key: config.sessionKey,
+//         store: new MongoStore({
+//             mongooseConnection: db.connection,
+//             collection: config.sessionCollection
+//         })
+//     }));
+// };
 
 /**
  * Configure Cors
@@ -103,7 +103,7 @@ module.exports.initCors = function (app) {
     if (config.cors && config.cors.enabled) {
         app.use(function (req, res, next) {
             res.header("Access-Control-Allow-Origin", config.cors.allowedOrigins);
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization");
             next();
         });
     }
@@ -195,7 +195,7 @@ module.exports.init = function (db) {
     this.initMiddleware(app);
 
     // Initialize Express session
-    this.initSession(app, db);
+    //this.initSession(app, db);
 
     // Initialize Modules configuration
     this.initModulesConfiguration(app);

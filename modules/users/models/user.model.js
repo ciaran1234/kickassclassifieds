@@ -7,19 +7,20 @@ var mongoose = require('mongoose'),
     crypto = require('crypto'),
     generatePassword = require('generate-password'),
     owasp = require('owasp-password-strength-test');
+  
 
 /**
 * A Validation function for local strategy properties
 */
 var validateLocalStrategyProperty = function (property) {
-    return ((this.provider !== 'local' && !this.updated) || property.length);
+    return ((this.provider !== 'jwt' && !this.updated) || property.length);
 };
 
 /**
  * A Validation function for local strategy email
  */
 var validateLocalStrategyEmail = function (email) {
-    return ((this.provider !== 'local' && !this.updated) || validator.isEmail(email));
+    return ((this.provider !== 'jwt' && !this.updated) || validator.isEmail(email));
 };
 
 var UserSchema = new Schema({
@@ -60,7 +61,10 @@ var UserSchema = new Schema({
         required: 'Provider is required'
     },
     providerData: {},
-    additionalProvidersData: {},
+    externalLogins: [{
+        type: mongoose.Schema.Types.Mixed,
+        ref: 'ExternalLogin'
+    }],    
     roles: {
         type: [{
             type: String,
@@ -92,7 +96,7 @@ UserSchema.pre('save', function (next) {
         this.salt = crypto.randomBytes(16).toString('base64');
         this.password = this.hashPassword(this.password);
     }
-
+    
     next();
 });
 
@@ -100,7 +104,7 @@ UserSchema.pre('save', function (next) {
  * Hook a pre validate method to test the local password
  */
 UserSchema.pre('validate', function (next) {
-    if (this.provider === 'local' && this.password && this.isModified('password')) {   
+    if (this.provider === 'jwt' && this.password && this.isModified('password')) {   
         var result = owasp.test(this.password);
         if (result.errors.length) {
             var error = result.errors.join(' ');

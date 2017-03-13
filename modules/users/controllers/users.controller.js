@@ -16,8 +16,16 @@ exports.update = function (req, res) {
     // For security measurement we remove the roles from the req.body object
     delete req.body.roles;
 
-    //remove email as it's apart of identity
+    // For security measurement remove sensitive data before updating
     delete req.body.email;
+    delete req.body.profileImageUrl;
+    delete req.body.profileImageUrl;
+    delete req.body.password;
+    delete req.body._id;
+    delete req.body.salt;
+    delete req.body.provider;
+    delete req.body.updated;
+    delete req.body.created;
 
     if (user) {
         user = _.extend(user, req.body);
@@ -27,13 +35,7 @@ exports.update = function (req, res) {
             if (err) {
                 return res.status(400).send(err);
             } else {
-                req.login(user, function (err) {
-                    if (err) {
-                        res.status(400).send(err);
-                    } else {
-                        res.json(user);
-                    }
-                });
+                return res.status(200).json(user);
             }
         });
     }
@@ -75,13 +77,7 @@ exports.changeProfilePicture = function (req, res) {
                     if (saveError) {
                         return res.status(400).send(saveError);
                     } else {
-                        req.login(user, function (err) {
-                            if (err) {
-                                res.status(400).send(err);
-                            } else {
-                                res.json(user);
-                            }
-                        });
+                        return res.status(200).json(user);
                     }
                 });
             }
