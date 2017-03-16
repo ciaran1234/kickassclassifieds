@@ -19,7 +19,7 @@ module.exports = function () {
     passReqToCallback: true
   },
     function (req, accessToken, refreshToken, profile, done) {   
-
+    
       // Set the provider data and include tokens
       var providerData = profile._json;
       providerData.accessToken = accessToken;
@@ -37,9 +37,9 @@ module.exports = function () {
         providerIdentifierField: 'id',
         providerData: providerData
       };
-
+      
       // Save the user OAuth profile    
-      users.saveOAuthUserProfile(req, providerUserProfile, done);
+      users.findOrCreateOAuthProfile(req, providerUserProfile, done);
 
       function generateUsername(profile) {
         var username = '';

@@ -45,7 +45,7 @@ module.exports = {
             invalidUsernamOrPassword: { code: 1000, message: 'Invalid email or password' },
             invalidExternalAccessToken: { code: 1001, message: 'Invalid Provider or External Access Token' },
             userAlreadySignedIn: { code: 1002, message: 'User already signed in' },
-            externalUserAlreadyRegistered: { code: 1003, message: 'External user is already registered' }
+            externalUserAlreadyRegistered: { code: 1003, message: 'External user is already registered' }            
         },
         validation: {
             emailAlreadyTaken: { code: 4000, message: 'email already taken'}

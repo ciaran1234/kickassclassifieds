@@ -6,7 +6,8 @@ var mongoose = require('mongoose'),
     ExternalLogin = mongoose.model('ExternalLogin'),
     config = require('../../../config/config'),
     jwt = require('jsonwebtoken'),
-    https = require('https');
+    https = require('https'),
+    _ = require('lodash');
 
 var issueJwt = function (id) {
     var token = jwt.sign({ id: id }, config.sessionSecret, {
@@ -87,16 +88,61 @@ exports.signout = function (req, res) {
     res.status(200).send();
 };
 
-exports.oauthCall = function (strategy, scope) {
+
+exports.addExternalLogin = function (strategy, scope) {
+    return function (req, res, next) {
+
+        if (!req.body.externalToken) {
+            return res.status(400).json(config.errorCodes.authorization.invalidExternalAccessToken);
+        }
+        else {
+            verifyExternalAccessToken(strategy, req.body.externalToken, function (err, externalToken) {
+                if (!externalToken.verified) {
+                    return res.status(400).json(config.errorCodes.authorization.invalidExternalAccessToken);
+                }
+                else {
+                    User.findById(req.user._id, function (err, user) {
+                        if (err) {
+                            return res.status(400).json();
+                        }
+                        else if (_.find(user.externalLogins, { 'loginProvider': externalToken.loginProvider, 'providerKey': externalToken.providerKey })) {
+                            return res.status(400).json(config.errorCodes.authorization.externalUserAlreadyRegistered);
+                        }
+                        else {
+                            var externalLogin = new ExternalLogin({ _id: { loginProvider: externalToken.loginProvider, providerKey: externalToken.providerKey } });
+                            user.externalLogins.push(externalLogin._id);
+                            user.markModified('externalLogins');
+
+                            user.save(function (err) {
+                                if (!err) {
+                                    externalLogin._id.userId = user._id;
+
+                                    externalLogin.save(function (err) {
+                                        return res.status(201).json();
+                                    });
+                                }
+                                else {
+                                    return res.status(400).json();
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    };
+};
+
+exports.openAuthCall = function (strategy, scope) {
     return function (req, res, next) {
         passport.authenticate(strategy, {
             scope: scope,
-            state: req.query.redirectUrl
+            state: req.query.redirectUrl,  //N.B ENSURE req.query.redirectUrl IS WHITELISTED!!!!!!!!!!            
         })(req, res, next);
     };
 };
 
-exports.oauthCallback = function (strategy) {
+exports.openAuthCallback = function (strategy) {
     return function (req, res, next) {
         passport.authenticate(strategy, function (err, user) {
             if (err) {
@@ -130,89 +176,7 @@ exports.exchangeAccessToken = function (req, res) {
     });
 };
 
-/**
- * Helper function to save or update a OAuth user profile
- */
-// exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
-//     if (!req.user) {
-//         // Define a search query fields
-//         var searchMainProviderIdentifierField = 'providerData.' + providerUserProfile.providerIdentifierField;
-//         var searchAdditionalProviderIdentifierField = 'additionalProvidersData.' + providerUserProfile.provider + '.' + providerUserProfile.providerIdentifierField;
-
-//         // Define main provider search query
-//         var mainProviderSearchQuery = {};
-//         mainProviderSearchQuery.provider = providerUserProfile.provider;
-//         mainProviderSearchQuery[searchMainProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-
-//         // Define additional provider search query
-//         var additionalProviderSearchQuery = {};
-//         additionalProviderSearchQuery[searchAdditionalProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-
-//         // Define a search query to find existing user with current provider profile
-//         var searchQuery = {
-//             $or: [mainProviderSearchQuery, additionalProviderSearchQuery]
-//         };
-
-
-//         User.findOne(searchQuery, function (err, user) {
-//             if (err) {
-//                 return done(err);
-//             } else {
-//                 if (!user) {
-
-//                     console.log(providerUserProfile);
-//                     var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
-
-//                     User.findUniqueUsername(possibleUsername, null, function (availableUsername) {
-//                         user = new User({
-//                             firstName: providerUserProfile.firstName,
-//                             lastName: providerUserProfile.lastName,
-//                             username: availableUsername,
-//                             displayName: providerUserProfile.displayName,
-//                             email: providerUserProfile.email,
-//                             profileImageURL: providerUserProfile.profileImageURL,
-//                             provider: providerUserProfile.provider,
-//                             providerData: providerUserProfile.providerData
-//                         });
-
-//                         // And save the user
-//                         user.save(function (err) {
-//                             return done(err, user);
-//                         });
-//                     });
-//                 } else {
-//                     return done(err, user);
-//                 }
-//             }
-//         });
-//     } else {      
-//         // User is already logged in, join the provider data to the existing user
-//         var user = req.user;
-
-//         // Check if user exists, is not signed in using this provider, and doesn't have that provider data already configured
-//         if (user.provider !== providerUserProfile.provider && (!user.additionalProvidersData || !user.additionalProvidersData[providerUserProfile.provider])) {
-//             // Add the provider data to the additional provider data field
-//             if (!user.additionalProvidersData) {
-//                 user.additionalProvidersData = {};
-//             }
-
-//             user.additionalProvidersData[providerUserProfile.provider] = providerUserProfile.providerData;
-
-//             // Then tell mongoose that we've updated the additionalProvidersData field
-//             user.markModified('additionalProvidersData');
-
-//             // And save the user
-//             user.save(function (err) {
-//                 return done(err, user, '/settings/accounts');
-//             });
-//         } else {
-//             return done(new Error('User is already connected using this provider'), user);
-//         }
-//     }
-// };
-
-//Register External
-exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
+exports.findOrCreateOAuthProfile = function (req, providerUserProfile, done) {
 
     return verifyExternalAccessToken(providerUserProfile.provider, providerUserProfile.providerData.accessToken, function (err, externalToken) {
         if (!externalToken.verified) {
@@ -221,7 +185,14 @@ exports.saveOAuthUserProfile = function (req, providerUserProfile, done) {
 
         ExternalLogin.findOne({ '_id.loginProvider': providerUserProfile.provider, '_id.providerKey': providerUserProfile.providerData.id }, function (err, existingProvider) {
             if (existingProvider) {
-                return done(config.errorCodes.authorization.externalUserAlreadyRegistered, providerUserProfile);
+                User.findById(existingProvider._id.userId, function (err, user) {
+                    if (err || !user) {
+                        return done(config.errorCodes.authorization.invalidExternalAccessToken, user);
+                    }
+                    else {
+                        return done(null, user);
+                    }
+                });
             }
             else {
                 var user = new User(providerUserProfile);

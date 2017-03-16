@@ -17,7 +17,7 @@ module.exports = {
     facebook: {
         clientID: process.env.FACEBOOK_ID || '431431603869202',
         clientSecret: process.env.FACEBOOK_SECRET || '124031dacc0f40ebf6b5119514eba438',
-        callbackURL: '/api/auth/register/facebook/callback',
+        callbackURL: '/api/auth/facebook/callback',
         appToken: '431431603869202|89vVaoi1TOX4sKG3yLKgpK9xt-8',
         verificationUrl: 'https://graph.facebook.com/debug_token?input_token=#{clientAccessToken}&access_token=#{appToken}'
     },
