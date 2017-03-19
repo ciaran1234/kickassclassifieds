@@ -2,12 +2,13 @@
 
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
+    AccountTokenSchema = mongoose.model('AccountTokenSchema'),
     validator = require('validator'),
     uniqueValidator = require('mongoose-unique-validator'),
     crypto = require('crypto'),
     generatePassword = require('generate-password'),
     owasp = require('owasp-password-strength-test');
-  
+
 
 /**
 * A Validation function for local strategy properties
@@ -44,6 +45,10 @@ var UserSchema = new Schema({
         default: '',
         validate: [validateLocalStrategyEmail, 'Please fill a valid email address']
     },
+    emailConfirmed: {
+        type: Boolean,
+        default: false
+    },
     password: {
         type: String,
         default: '',
@@ -64,7 +69,7 @@ var UserSchema = new Schema({
     externalLogins: [{
         type: mongoose.Schema.Types.Mixed,
         ref: 'ExternalLogin'
-    }],    
+    }],
     roles: {
         type: [{
             type: String,
@@ -96,7 +101,7 @@ UserSchema.pre('save', function (next) {
         this.salt = crypto.randomBytes(16).toString('base64');
         this.password = this.hashPassword(this.password);
     }
-    
+
     next();
 });
 
@@ -104,7 +109,7 @@ UserSchema.pre('save', function (next) {
  * Hook a pre validate method to test the local password
  */
 UserSchema.pre('validate', function (next) {
-    if (this.provider === 'jwt' && this.password && this.isModified('password')) {   
+    if (this.provider === 'jwt' && this.password && this.isModified('password')) {
         var result = owasp.test(this.password);
         if (result.errors.length) {
             var error = result.errors.join(' ');
@@ -129,8 +134,8 @@ UserSchema.methods.hashPassword = function (password) {
 /**
  * Create instance method for authenticating user
  */
-UserSchema.methods.authenticate = function (password) {
-    return this.password === this.hashPassword(password);
+UserSchema.methods.authenticate = function (password) {  
+    return this.password === this.hashPassword(password) && this.emailConfirmed;
 };
 
 /**
@@ -190,6 +195,54 @@ UserSchema.statics.generateRandomPassphrase = function () {
         }
     });
 };
+
+UserSchema.methods.generateEmailConfirmationToken = function (cb) {   
+    let tokenSalt = crypto.randomBytes(16).toString('base64');
+    let token = crypto.pbkdf2Sync(this._id.toString(), new Buffer(tokenSalt, 'base64'), 10000, 64).toString('base64');
+    var expires = new Date();
+    expires.setDate(expires.getDate() + 2);
+
+    var confirmationToken = new AccountTokenSchema({
+        salt: tokenSalt,
+        token: token,
+        userId: this._id,
+        expires: expires
+    });
+
+    confirmationToken.save(function (err) {
+        if (err) {
+            return cb(err, null);
+        }
+
+        return cb(null, confirmationToken);
+    });
+};
+
+UserSchema.methods.generatePasswordResetToken = function(cb) {
+    let tokenSalt = crypto.randomBytes(16).toString('base64');
+    let token = crypto.pbkdf2Sync(this._id.toString(), new Buffer(tokenSalt, 'base64'), 10000, 64).toString('base64');
+    var expires = new Date();
+    expires.setDate(expires.getDate() + 1);
+
+    var resetToken = new AccountTokenSchema({
+        salt: tokenSalt,
+        token: token,
+        userId: this._id,
+        expires: expires,
+        type: 'password'
+    });
+
+    resetToken.save(function (err) {
+        console.log(err);
+
+        if (err) {
+            return cb(err, null);
+        }
+
+        return cb(null, resetToken);
+    });
+};
+
 
 UserSchema.plugin(uniqueValidator, { message: '{PATH} \'{VALUE}\' is already taken' });
 mongoose.model('User', UserSchema);

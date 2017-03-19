@@ -4,7 +4,7 @@ var defaultEnvConfig = require('./default');
 
 module.exports = {
     db: {
-        uri: 'mongodb://localhost/mean-dev',
+        uri: 'mongodb://localhost/kickassclassifieds',
         credentials: {
             user: '',
             password: ''
@@ -27,9 +27,10 @@ module.exports = {
         callbackURL: '/api/auth/twitter/callback'
     },
     google: {
-        clientID: process.env.GOOGLE_ID || 'APP_ID',
-        clientSecret: process.env.GOOGLE_SECRET || 'APP_SECRET',
-        callbackURL: '/api/auth/google/callback'
+        clientID: process.env.GOOGLE_ID || '449715294481-peuaa6413388nfn0utf1uosv1lleu3ti.apps.googleusercontent.com',
+        clientSecret: process.env.GOOGLE_SECRET || 'nR0DxFfoFsugzxA-l84tWZpd',
+        callbackURL: '/api/auth/google/callback',
+         verificationUrl: 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=#{clientAccessToken}'
     },    
     linkedin: {
         clientID: process.env.LINKEDIN_ID || 'APP_ID',

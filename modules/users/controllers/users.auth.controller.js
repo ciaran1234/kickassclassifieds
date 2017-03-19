@@ -4,9 +4,12 @@ var mongoose = require('mongoose'),
     passport = require('passport'),
     User = mongoose.model('User'),
     ExternalLogin = mongoose.model('ExternalLogin'),
+    AccountTokenSchema = mongoose.model('AccountTokenSchema'),
     config = require('../../../config/config'),
     jwt = require('jsonwebtoken'),
     https = require('https'),
+    accountConfirmationEmail = require('../../infrastructure/email/accountConfirmationEmail'),
+    passwordResetEmail = require('../../infrastructure/email/passwordResetEmail'),
     _ = require('lodash');
 
 var issueJwt = function (id) {
@@ -19,7 +22,7 @@ var issueJwt = function (id) {
 
 var verifyExternalAccessToken = function (provider, accessToken, cb) {
     if (provider === 'facebook') {
-        var url = config.facebook.verificationUrl
+        let url = config.facebook.verificationUrl
             .replace('#{appToken}', config.facebook.appToken)
             .replace('#{clientAccessToken}', accessToken);
 
@@ -49,6 +52,35 @@ var verifyExternalAccessToken = function (provider, accessToken, cb) {
             });
         }).end();
     }
+    else if (provider === 'google') {
+        let url = config.google.verificationUrl.replace('#{clientAccessToken}', accessToken);
+        https.request(url, function (res) {
+            var body = '';
+
+            res.on('data', function (chunk) {
+                body += chunk;
+            });
+
+            res.on('end', function () {
+                try {
+                    var result = JSON.parse(body);
+
+                    return cb(null, {
+                        verified: result.expires_in > 0 && result.verified_email && result.issued_to === config.google.clientID,
+                        providerKey: result.user_id,
+                        loginProvider: 'google'
+                    });
+                }
+                catch (ex) {
+                    return cb(ex, false);
+                }
+            });
+
+            res.on('error', function (err) {
+                return cb(err, false);
+            });
+        }).end();
+    }
     else {
         return cb(config.errorCodes.authorization.invalidExternalAccessToken.message, false);
     }
@@ -62,10 +94,105 @@ exports.signup = function (req, res) {
 
     user.save(function (err) {
         if (err) {
-            return res.status(400).send(err);
+            res.status(400).send(err);
         }
         else {
-            res.json({ token: issueJwt(user.id) });
+            user.generateEmailConfirmationToken(function (err, confirmationToken) {
+                let callbackUrl = 'http://localhost:4200/account/confirm?token=' + confirmationToken.token + '&uid=' + user._id;  // need to get schema + host... append token to end...
+
+                accountConfirmationEmail.send(user, callbackUrl, function (error, info) {
+                    if (error) {
+                        res.status(400).json({ message: 'An error occurred' });
+                    }
+
+                    res.status(200).json({ message: 'success' });
+                });
+            });
+        }
+    });
+};
+
+exports.confirmAccount = function (req, res) {
+    AccountTokenSchema.findOne({ token: req.body.token, userId: req.body.userId, type: 'email' }, function (err, token) {
+        if (err || !token) {
+          return  res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+        }
+        else if (token.isValid(req.body.userId)) {
+            User.findById(req.body.userId, function (err, user) {
+                if (err || !user) {
+                 return   res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+                }
+                else {
+                    user.emailConfirmed = true;
+                    user.updated = Date.now();
+                    user.markModified('emailConfirmed');
+
+                    user.save(function (err) {
+                        if (err) {
+                           return res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+                        }
+                        else {
+                            token.remove();
+                         return   res.status(200).json();
+                        }
+                    });
+                }
+            });
+        }
+        else {
+         return   res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+        }
+    });
+};
+
+exports.resetPassword = function(req, res) {
+    User.findOne({email: req.body.email}, function(err, user){
+        if(err || !user || !user.emailConfirmed) {           
+            return res.status(200).json(); 
+        }      
+
+        user.generatePasswordResetToken(function(err, resetToken) {
+                let callbackUrl = 'http://localhost:4200/account/confirmResetPassword?token=' + resetToken.token + '&uid=' + user._id;
+                passwordResetEmail.send(user, callbackUrl, function (error, info) {                 
+                    if (error) {
+                       return res.status(400).json();
+                    }
+
+                   return res.status(200).json();
+                });
+        });
+    });
+};
+
+exports.resetPasswordConfirmed = function(req, res) {
+    AccountTokenSchema.findOne({ token: req.body.token, userId: req.body.userId, type: 'password' }, function (err, token) {
+        if (err || !token) {
+            return res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+        }
+        else if (token.isValid(req.body.userId)) {
+            User.findById(req.body.userId, function (err, user) {
+                if (err || !user) {
+                    return res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
+                }
+                else {
+                    user.password = req.body.password;
+                    user.updated = Date.now();
+                    user.markModified('password');
+
+                    user.save(function (err) {
+                        if (err) {
+                           return res.status(400).json(err);
+                        }
+                        else {
+                            token.remove();
+                            return res.status(200).json();
+                        }
+                    });
+                }
+            });
+        }
+        else {
+            return res.status(400).json(config.errorCodes.authorization.invalidConfirmationToken);
         }
     });
 };
@@ -146,7 +273,12 @@ exports.openAuthCallback = function (strategy) {
     return function (req, res, next) {
         passport.authenticate(strategy, function (err, user) {
             if (err) {
-                return res.redirect(req.query.state + '?error=' + err.code);
+                if (err.code === config.errorCodes.authorization.externalUserAlreadyRegistered.code && err.email) {
+                    return res.redirect(req.query.state + '?error=' + err.code + '&email=' + err.email);
+                }
+                else {
+                    return res.redirect(req.query.state + '?error=' + err.code);
+                }
             }
             else if (!user) {
                 return res.redirect(req.query.state + '?error=' + config.errorCodes.authorization.userAlreadySignedIn.code);
@@ -177,7 +309,6 @@ exports.exchangeAccessToken = function (req, res) {
 };
 
 exports.findOrCreateOAuthProfile = function (req, providerUserProfile, done) {
-
     return verifyExternalAccessToken(providerUserProfile.provider, providerUserProfile.providerData.accessToken, function (err, externalToken) {
         if (!externalToken.verified) {
             return done(err);
@@ -195,20 +326,33 @@ exports.findOrCreateOAuthProfile = function (req, providerUserProfile, done) {
                 });
             }
             else {
-                var user = new User(providerUserProfile);
-                var externalLogin = new ExternalLogin({ _id: { loginProvider: providerUserProfile.provider, providerKey: providerUserProfile.providerData.id } });
-                user.externalLogins.push(externalLogin._id);
-
-                user.save(function (err) {
-                    if (!err) {
-                        externalLogin._id.userId = user._id;
-
-                        externalLogin.save(function (err) {
-                            return done(null, user);
-                        });
+                User.findOne({ email: providerUserProfile.email }, function (err, existingUser) {
+                    if (err) {
+                        return done(err, existingUser);
+                    }
+                    else if (existingUser) {
+                        let error = config.errorCodes.authorization.externalUserAlreadyRegistered;
+                        error.email = existingUser.email;
+                        return done(error);
                     }
                     else {
-                        return done(err, user);
+                        var user = new User(providerUserProfile);
+                        user.emailConfirmed = true;
+                        var externalLogin = new ExternalLogin({ _id: { loginProvider: providerUserProfile.provider, providerKey: providerUserProfile.providerData.id } });
+                        user.externalLogins.push(externalLogin._id);
+
+                        user.save(function (err) {
+                            if (!err) {
+                                externalLogin._id.userId = user._id;
+
+                                externalLogin.save(function (err) {
+                                    return done(null, user);
+                                });
+                            }
+                            else {
+                                return done(err, user);
+                            }
+                        });
                     }
                 });
             }
