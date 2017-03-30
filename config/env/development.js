@@ -11,6 +11,10 @@ module.exports = {
         },
         debug: false
     },
+    cache: {
+        host: 'localhost',
+        port: '6379'
+    },
     app: {
         title: defaultEnvConfig.app.title + ' - Development Environment'
     },
@@ -18,6 +22,7 @@ module.exports = {
         clientID: process.env.FACEBOOK_ID || '431431603869202',
         clientSecret: process.env.FACEBOOK_SECRET || '124031dacc0f40ebf6b5119514eba438',
         callbackURL: '/api/auth/facebook/callback',
+        scope: { scope: ['email'] },
         appToken: '431431603869202|89vVaoi1TOX4sKG3yLKgpK9xt-8',
         verificationUrl: 'https://graph.facebook.com/debug_token?input_token=#{clientAccessToken}&access_token=#{appToken}'
     },
@@ -30,8 +35,9 @@ module.exports = {
         clientID: process.env.GOOGLE_ID || '449715294481-peuaa6413388nfn0utf1uosv1lleu3ti.apps.googleusercontent.com',
         clientSecret: process.env.GOOGLE_SECRET || 'nR0DxFfoFsugzxA-l84tWZpd',
         callbackURL: '/api/auth/google/callback',
-         verificationUrl: 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=#{clientAccessToken}'
-    },    
+        scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+        verificationUrl: 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=#{clientAccessToken}'
+    },
     linkedin: {
         clientID: process.env.LINKEDIN_ID || 'APP_ID',
         clientSecret: process.env.LINKEDIN_SECRET || 'APP_SECRET',
@@ -52,5 +58,6 @@ module.exports = {
     cors: {
         enabled: true,
         allowedOrigins: ['*']
-    }
+    },
+    whitelistUrls: ['http://localhost:4200']
 };

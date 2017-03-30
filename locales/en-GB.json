@@ -1,0 +1,17 @@
+{
+	"authorization": {
+		"invalidUsernamOrPassword": "Invalid email or password",
+		"invalidExternalAccessToken": "Invalid provider or external access token",
+		"userAlreadySignedIn": "User already signed in",
+		"externalUserAlreadyRegistered": "External user is already registered",
+		"invalidConfirmationToken": "Invalid confirmation token provided",
+		"invalidResetToken": "Invalid reset token provided"
+	},
+	"validation": {
+		"email": {
+			"alreadyExists":"Email already taken",
+			"required": "Email is required",
+			"invalid": "Invalid email"
+		}
+	}
+}

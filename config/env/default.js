@@ -29,6 +29,9 @@ module.exports = {
     // for obsecurity reasons
     sessionKey: 'sessionId',
     sessionCollection: 'sessions',
+    oauthProviderSecret: process.env.OAUTH_PROVIDER_SECRET || 'MEAN',
+    accountTokenSecret: process.env.ACCOUNT_CONFIRMATION_SECRET || 'MEAN',
+    resetPasswordSecret: process.env.RESET_PASSWORD_SECRET || 'MEAN',
     logo: 'modules/core/client/img/brand/logo.png',
     favicon: 'modules/core/client/img/brand/favicon.ico',
     uploads: {
@@ -51,15 +54,8 @@ module.exports = {
         applicationAddress: '"Kick Ass Classifieds" <ciaran.mcdonald4@gmail.com>'
     },
     errorCodes: {
-        authorization: {
-            invalidUsernamOrPassword: { code: 1000, message: 'Invalid email or password' },
-            invalidExternalAccessToken: { code: 1001, message: 'Invalid Provider or External Access Token' },
-            userAlreadySignedIn: { code: 1002, message: 'User already signed in' },
-            externalUserAlreadyRegistered: { code: 1003, message: 'External user is already registered' },
-            invalidConfirmationToken: { code: 1004, message: 'Invalid confirmation token' }
-        },
-        validation: {
-            emailAlreadyTaken: { code: 4000, message: 'email already taken' }
-        }
+        authorization: {        
+            userAlreadySignedIn: { code: 1002, message: 'User already signed in' },              
+        }      
     }
 };

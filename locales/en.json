@@ -1,0 +1,89 @@
+{
+	"http": {
+		"codes": {
+			"ok": "Ok",
+			"created": "created",
+			"badRequest": "Bad request",
+			"notFound": "Not Found",
+			"unauthorized": "Unauthorized",
+			"forbidden": "Forbidden",
+			"internalServerError": "An unexpected error has occurred"
+		}
+	},
+	"authorization": {
+		"invalidUsernamOrPassword": "Invalid email or password",
+		"invalidExternalAccessToken": "Invalid provider or external access token",
+		"externalAccessTokenRequired": "External access token required",
+		"userAlreadySignedIn": "User already signed in",
+		"externalUserAlreadyRegistered": "External user is already registered",
+		"invalidConfirmationToken": "Invalid account information provided",
+		"invalidResetToken": "Invalid reset token provided",
+		"invalidData": "Invalid data provider"
+	},
+	"validation": {
+		"email": {
+			"alreadyExists": "This email is already taken. Please choose another",
+			"required": "Email is required",
+			"invalid": "Invalid email",
+			"length": "Max length of 256 characters for email"
+		},
+		"user": {
+			"firstName": {
+				"required": "First name is required",
+				"length": "Max length of 30 characters for first name"
+			},
+			"lastName": {
+				"required": "last name is required",
+				"length": "Max length of 40 characters for last name"
+			},
+			"email": {
+				"invalid": "Please fill in a valid email"
+			},
+			"password": {
+				"required": "Password is required",
+				"length": "Password must be between 10 and 128 characters",
+				"owasp": "The password must contain at least one uppercase letter, one number and one special character"
+			},
+			"provider": {
+				"required": "Provider is required"
+			},
+			"roles": {
+				"required": "At least one role is required"
+			},
+			"confirmationUrl": {
+				"required": "An account confirmation url is required"
+			}
+		},
+		"confirmAccount": {
+			"token": {
+				"required": "Account confirmation token required"
+			},
+			"userId": {
+				"required": "User identifier required"
+			}
+		},
+		"resetPassword": {
+			"callbackUrl": {
+				"required": "Reset password callback url required"
+			},
+			"token": {
+				"required": "Password reset token required"
+			},
+			"userId": {
+				"required": "User identifier required"
+			}
+		},
+		"files": {
+			"notFound": "No file was found. Please select a file",
+			"invalidImageFormat": "That is not a valid image file"
+		}
+	},
+	"security": {
+		"callbackUrl": {
+			"accountConfirmation": "Invalid account confirmation url provided",
+			"resetPassword": "Invalid reset password url provided",
+			"oauthSigninRequired": "social signin redirect url required",
+			"oauthSignin": "Invalid social signin redirect url provided"
+		}
+	}
+}

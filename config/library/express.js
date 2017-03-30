@@ -2,6 +2,7 @@
 
 var config = require('../config'),
     express = require('express'),
+    expressValidator = require('express-validator'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
     MongoStore = require('connect-mongo')(session),
@@ -11,7 +12,9 @@ var config = require('../config'),
     flash = require('connect-flash'),
     compress = require('compression'),
     path = require('path'),
-    chalk = require('chalk');
+    chalk = require('chalk'),
+    i18n = require('i18n-2'),
+    owasp = require('owasp-password-strength-test');
 
 /**
 * Initialize local variables
@@ -54,6 +57,11 @@ module.exports.initMiddleware = function (app) {
         level: 9
     }));
 
+    //setup local file dump for local development
+    if (process.env.NODE_ENV === 'development') {
+        app.use('/images', express.static('./tmp/images'));
+    }
+
     // Environment dependent middleware
     if (process.env.NODE_ENV === 'development') {
         // Disable views cache
@@ -66,35 +74,65 @@ module.exports.initMiddleware = function (app) {
     app.use(bodyParser.urlencoded({
         extended: true
     }));
+
     app.use(bodyParser.json());
+
+    app.use(expressValidator({
+        errorFormatter: function (param, msg, value) {
+            var namespace = param.split('.'), root = namespace.shift(), formParam = root;
+
+            while (namespace.length) {
+                formParam += '[' + namespace.shift() + ']';
+            }
+            return {
+                param: formParam,
+                message: msg,
+                value: value
+            };
+        },
+        customValidators: {
+            isValidOwaspPassword: function (value) {                
+                if (!value) return false;
+
+                var result = owasp.test(value); //he password may not contain sequences of three or more repeated characters.
+                return result.errors && result.errors.length === 0;
+            },
+            isValidCallbackUrl: function (value) {
+                var isValid = false;
+                var whitelist = config.whitelistUrls || [];
+
+                if (value) {
+                    for (let i = 0; i < whitelist.length; i++) {
+                        if (value.length >= whitelist[i].length && value.substring(0, whitelist[i].length) === whitelist[i]) {
+                            isValid = true;
+                            break;
+                        }
+                    }
+                }
+
+                return isValid;
+            }
+        }
+    }));
+
     app.use(methodOverride());
 
     // Add the cookie parser and flash middleware
     app.use(cookieParser());
     app.use(flash());
-};
 
-/**
- * Configure Express session
- */
-// module.exports.initSession = function (app, db) {
-//     // Express MongoDB session storage
-//     app.use(session({
-//         saveUninitialized: true,
-//         resave: true,
-//         secret: config.sessionSecret,
-//         cookie: {
-//             maxAge: config.sessionCookie.maxAge,
-//             httpOnly: config.sessionCookie.httpOnly,
-//             secure: config.sessionCookie.secure && config.secure.ssl
-//         },
-//         key: config.sessionKey,
-//         store: new MongoStore({
-//             mongooseConnection: db.connection,
-//             collection: config.sessionCollection
-//         })
-//     }));
-// };
+    //internationalisation
+    i18n.expressBind(app, {
+        locales: ['en', 'en-GB', 'en-US', 'fr', 'ar'],
+        cookieName: 'locale',
+        extension: '.json'
+    });
+
+    app.use(function (req, res, next) {
+        req.i18n.setLocaleFromCookie();
+        next();
+    });
+};
 
 /**
  * Configure Cors
@@ -103,7 +141,7 @@ module.exports.initCors = function (app) {
     if (config.cors && config.cors.enabled) {
         app.use(function (req, res, next) {
             res.header("Access-Control-Allow-Origin", config.cors.allowedOrigins);
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
             next();
         });
     }
@@ -168,15 +206,12 @@ module.exports.initErrorRoutes = function (app) {
 
         // Log it
         console.error(chalk.red(err.stack));
-       
-        // Redirect to error page
-        // res.redirect('/server-error');
 
         if (process.env.NODE_ENV === 'development') {
-            res.status(500).send(err.stack);
+            res.status(500).json({ errors: { message: 'Internal Server Error', stack: err.stack } });
         }
         else {
-            res.status(500).send('Internal Server Error');
+            res.status(500).json({ errors: { message: 'Internal Server Error' } });
         }
     });
 };

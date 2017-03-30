@@ -1,0 +1,38 @@
+{
+	"authorization": {
+		"invalidUsernamOrPassword": "Invalid email or password",
+		"invalidExternalAccessToken": "Invalid provider or external access token",
+		"userAlreadySignedIn": "User already signed in",
+		"externalUserAlreadyRegistered": "External user is already registered",
+		"invalidConfirmationToken": "Invalid confirmation token provided",
+		"invalidResetToken": "Invalid reset token provided"
+	},
+	"validation": {
+		"email": {
+			"alreadyExists": "Email already taken",
+			"required": "Email is required",
+			"invalid": "Invalid email"
+		},
+		"user": {
+			"firstName": {
+				"required": "First name is required"
+			},
+			"lastName": {
+				"required": "last name is required"
+			},
+			"email": {
+				"invalid": "Please fill in a valid email"
+			},
+			"password": {
+				"required": "Password is required",
+				"owasp": "The password must contain at least one uppercase letter, one number and one special character"
+			},
+			"provider": {
+				"required": "Provider is required"
+			},
+			"roles": {
+				"required": "At least one role is required"
+			}
+		}
+	}
+}

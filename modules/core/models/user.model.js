@@ -1,20 +1,20 @@
 'use strict';
 
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    AccountTokenSchema = mongoose.model('AccountTokenSchema'),
+    Schema = mongoose.Schema,   
     validator = require('validator'),
     uniqueValidator = require('mongoose-unique-validator'),
     crypto = require('crypto'),
     generatePassword = require('generate-password'),
     owasp = require('owasp-password-strength-test');
 
-
 /**
 * A Validation function for local strategy properties
 */
 var validateLocalStrategyProperty = function (property) {
-    return ((this.provider !== 'jwt' && !this.updated) || property.length);
+    return this.provider !== 'jwt' || property.length;
+
+   // return ((this.provider !== 'jwt' && !this.updated) || property.length);
 };
 
 /**
@@ -29,21 +29,21 @@ var UserSchema = new Schema({
         type: String,
         trim: true,
         default: '',
-        validate: [validateLocalStrategyProperty, 'Please fill in your first name']
+        validate: [validateLocalStrategyProperty, 'validation.user.firstName.required']
     },
     lastName: {
         type: String,
         trim: true,
         default: '',
-        validate: [validateLocalStrategyProperty, 'Please fill in your last name']
+        validate: [validateLocalStrategyProperty, 'validation.user.lastName.required']
     },
     email: {
         type: String,
         unique: true,
         lowercase: true,
         trim: true,
-        default: '',
-        validate: [validateLocalStrategyEmail, 'Please fill a valid email address']
+        required: 'validation.email.required',        
+        validate: [validateLocalStrategyEmail, 'validation.user.email.invalid']
     },
     emailConfirmed: {
         type: Boolean,
@@ -52,7 +52,7 @@ var UserSchema = new Schema({
     password: {
         type: String,
         default: '',
-        validate: [validateLocalStrategyProperty, 'Password Required']
+        validate: [validateLocalStrategyProperty, 'validation.user.password.required']
     },
     salt: {
         type: String
@@ -63,7 +63,7 @@ var UserSchema = new Schema({
     },
     provider: {
         type: String,
-        required: 'Provider is required'
+        required: 'validation.user.provider.required'
     },
     providerData: {},
     externalLogins: [{
@@ -76,7 +76,7 @@ var UserSchema = new Schema({
             enum: ['user', 'admin']
         }],
         default: 'user',
-        required: 'At least one role is required'
+        required: 'validation.user.roles.required'
     },
     updated: {
         type: Date
@@ -93,9 +93,6 @@ var UserSchema = new Schema({
     }
 });
 
-/**
- * Hook a pre save method to hash the password
- */
 UserSchema.pre('save', function (next) {
     if (this.password && this.isModified('password')) {
         this.salt = crypto.randomBytes(16).toString('base64');
@@ -105,9 +102,6 @@ UserSchema.pre('save', function (next) {
     next();
 });
 
-/**
- * Hook a pre validate method to test the local password
- */
 UserSchema.pre('validate', function (next) {
     if (this.provider === 'jwt' && this.password && this.isModified('password')) {
         var result = owasp.test(this.password);
@@ -120,9 +114,6 @@ UserSchema.pre('validate', function (next) {
     next();
 });
 
-/**
- * Create instance method for hashing a password
- */
 UserSchema.methods.hashPassword = function (password) {
     if (this.salt && password) {
         return crypto.pbkdf2Sync(password, new Buffer(this.salt, 'base64'), 10000, 64).toString('base64');
@@ -131,16 +122,10 @@ UserSchema.methods.hashPassword = function (password) {
     }
 };
 
-/**
- * Create instance method for authenticating user
- */
 UserSchema.methods.authenticate = function (password) {  
     return this.password === this.hashPassword(password) && this.emailConfirmed;
 };
 
-/**
- * Find possible not used username
- */
 UserSchema.statics.findUniqueUsername = function (username, suffix, callback) {
     var _this = this;
     var possibleUsername = username.toLowerCase() + (suffix || '');
@@ -196,53 +181,5 @@ UserSchema.statics.generateRandomPassphrase = function () {
     });
 };
 
-UserSchema.methods.generateEmailConfirmationToken = function (cb) {   
-    let tokenSalt = crypto.randomBytes(16).toString('base64');
-    let token = crypto.pbkdf2Sync(this._id.toString(), new Buffer(tokenSalt, 'base64'), 10000, 64).toString('base64');
-    var expires = new Date();
-    expires.setDate(expires.getDate() + 2);
-
-    var confirmationToken = new AccountTokenSchema({
-        salt: tokenSalt,
-        token: token,
-        userId: this._id,
-        expires: expires
-    });
-
-    confirmationToken.save(function (err) {
-        if (err) {
-            return cb(err, null);
-        }
-
-        return cb(null, confirmationToken);
-    });
-};
-
-UserSchema.methods.generatePasswordResetToken = function(cb) {
-    let tokenSalt = crypto.randomBytes(16).toString('base64');
-    let token = crypto.pbkdf2Sync(this._id.toString(), new Buffer(tokenSalt, 'base64'), 10000, 64).toString('base64');
-    var expires = new Date();
-    expires.setDate(expires.getDate() + 1);
-
-    var resetToken = new AccountTokenSchema({
-        salt: tokenSalt,
-        token: token,
-        userId: this._id,
-        expires: expires,
-        type: 'password'
-    });
-
-    resetToken.save(function (err) {
-        console.log(err);
-
-        if (err) {
-            return cb(err, null);
-        }
-
-        return cb(null, resetToken);
-    });
-};
-
-
-UserSchema.plugin(uniqueValidator, { message: '{PATH} \'{VALUE}\' is already taken' });
+UserSchema.plugin(uniqueValidator, { message: 'validation.email.alreadyExists' });
 mongoose.model('User', UserSchema);

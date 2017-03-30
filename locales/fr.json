@@ -1,0 +1,48 @@
+{
+	"http": {
+		"codes": {
+			"internalServerError": "Erreur inattendue s’est produite",
+			"unauthorized": "Non autorisé",
+			"forbidden": "Interdit"
+		}
+	},
+	"authorization": {
+		"invalidUsernamOrPassword": "Invalid email or password",
+		"invalidExternalAccessToken": "Invalid provider or external access token",
+		"userAlreadySignedIn": "User already signed in",
+		"externalUserAlreadyRegistered": "External user is already registered",
+		"invalidConfirmationToken": "Invalid confirmation token provided",
+		"invalidResetToken": "Invalid reset token provided"
+	},
+	"validation": {
+		"email": {
+			"alreadyExists": "Cet e-mail est déjà pris. Veuillez choisir un autre",
+			"required": "E-mail obligatoire",
+			"invalid": "Email invalide",
+			"length": "length"
+		},
+		"user": {
+			"firstName": {
+				"required": "Prénom obligatoire",
+				"length": "length"
+			},
+			"lastName": {
+				"required": "Nom de famille requis",
+				"length": "length"
+			},
+			"email": {
+				"invalid": "Veuillez remplir un email valide"
+			},
+			"password": {
+				"required": "Mot de passe requis"
+			},
+			"provider": {
+				"required": "Le fournisseur est requis"
+			},
+			"roles": {
+				"required": "Au moins un rôle est requis"
+			}
+		},
+		"files.invalidImageFormat": "files.invalidImageFormat"
+	}
+}

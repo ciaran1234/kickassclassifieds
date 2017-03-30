@@ -1,11 +1,12 @@
 'use strict';
 
 var config = require('../config'),
+    BluebirdPromise = require('bluebird'),
     chalk = require('chalk'),
     path = require('path'),
     mongoose = require('mongoose');
 
-mongoose.Promise = global.Promise;
+mongoose.Promise = BluebirdPromise;
 
 module.exports.loadModels = function (callback) {
     config.files.models.forEach(function (modelPath) {

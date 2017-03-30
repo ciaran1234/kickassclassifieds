@@ -21,23 +21,21 @@ exports.invokeRolesPolicies = function () {
 
 exports.isAllowed = function (req, res, next) {
     if (!req.user) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ errors: { message: req.i18n.__("http.codes.unauthorized") } });
     }
 
     var roles = (req.user && req.user.roles) ? req.user.roles : ['guest'];
 
     acl.areAnyRolesAllowed(roles, req.route.path, req.method.toLowerCase(), function (err, isAllowed) {
         if (err) {
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
         }
         else {
-            if (isAllowed) {              
+            if (isAllowed) {
                 return next();
             }
             else {
-                return res.status(403).json({
-                    message: 'Forbidden'
-                });
+                return res.status(403).json({ errors: { message: req.i18n.__("http.codes.forbidden") } });
             }
         }
     });

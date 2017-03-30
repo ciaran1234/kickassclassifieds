@@ -1,0 +1,34 @@
+{
+	"http": {
+		"codes": {
+			"internalServerError": "An unexpected error has occurred",
+			"unauthorized": "غير مصرح",
+			"forbidden": "Forbidden"
+		}
+	},
+	"authorization": {
+		"invalidUsernamOrPassword": "Invalid email or password",
+		"invalidExternalAccessToken": "Invalid provider or external access token",
+		"userAlreadySignedIn": "User already signed in",
+		"externalUserAlreadyRegistered": "External user is already registered",
+		"invalidConfirmationToken": "Invalid confirmation token provided",
+		"invalidResetToken": "Invalid reset token provided"
+	},
+	"validation": {
+		"email": {
+			"alreadyExists": "Email already taken",
+			"required": "Email is required",
+			"invalid": "Invalid email",
+			"length": "length"
+		},
+		"user.password.required": "user.password.required",
+		"user.password.length": "user.password.length",
+		"user.password.owasp": "user.password.owasp",
+		"user.firstName.required": "user.firstName.required",
+		"user.firstName.length": "user.firstName.length",
+		"user.lastName.required": "user.lastName.required",
+		"user.lastName.length": "user.lastName.length",
+		"user.confirmationUrl.required": "user.confirmationUrl.required"
+	},
+	"security.callbackUrl.accountConfirmation": "security.callbackUrl.accountConfirmation"
+}

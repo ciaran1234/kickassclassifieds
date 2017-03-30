@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require('../../../../config/config'),
+var config = require('../../../../../config/config'),
     passport = require('passport'),
     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
     users = require('../../controllers/users.auth.controller');

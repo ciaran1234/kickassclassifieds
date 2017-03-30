@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-var config = require('../../../../config/config'),
+var config = require('../../../../../config/config'),
   passport = require('passport'),
   FacebookStrategy = require('passport-facebook').Strategy,
   users = require('../../controllers/users.auth.controller');
@@ -18,8 +18,8 @@ module.exports = function () {
     profileFields: ['id', 'name', 'displayName', 'emails', 'photos'],
     passReqToCallback: true
   },
-    function (req, accessToken, refreshToken, profile, done) {   
-    
+    function (req, accessToken, refreshToken, profile, done) {
+
       // Set the provider data and include tokens
       var providerData = profile._json;
       providerData.accessToken = accessToken;
@@ -37,7 +37,7 @@ module.exports = function () {
         providerIdentifierField: 'id',
         providerData: providerData
       };
-      
+
       // Save the user OAuth profile    
       users.findOrCreateOAuthProfile(req, providerUserProfile, done);
 
@@ -46,7 +46,8 @@ module.exports = function () {
 
         if (profile.emails) {
           username = profile.emails[0].value.split('@')[0];
-        } else if (profile.name) {
+        }
+        else if (profile.name) {
           username = profile.name.givenName[0] + profile.name.familyName;
         }
 
