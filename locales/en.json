@@ -54,6 +54,11 @@
 				"required": "An account confirmation url is required"
 			}
 		},
+		"externalLogin": {
+			"loginProvider": "Social login provider required",
+			"providerKey": "Social login provider key required",
+			"notFound": "External login not found"
+		},
 		"confirmAccount": {
 			"token": {
 				"required": "Account confirmation token required"

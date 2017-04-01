@@ -91,7 +91,7 @@ module.exports.initMiddleware = function (app) {
             };
         },
         customValidators: {
-            isValidOwaspPassword: function (value) {                
+            isValidOwaspPassword: function (value) {
                 if (!value) return false;
 
                 var result = owasp.test(value); //he password may not contain sequences of three or more repeated characters.
@@ -125,7 +125,8 @@ module.exports.initMiddleware = function (app) {
     i18n.expressBind(app, {
         locales: ['en', 'en-GB', 'en-US', 'fr', 'ar'],
         cookieName: 'locale',
-        extension: '.json'
+        extension: '.json',
+        devMode: false
     });
 
     app.use(function (req, res, next) {
@@ -141,6 +142,7 @@ module.exports.initCors = function (app) {
     if (config.cors && config.cors.enabled) {
         app.use(function (req, res, next) {
             res.header("Access-Control-Allow-Origin", config.cors.allowedOrigins);
+            res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, ORIGIN");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
             next();
         });

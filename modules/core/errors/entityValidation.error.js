@@ -1,23 +1,23 @@
 'use strict';
 
-module.exports = function EntityValidationError(message, validationResult) {
+module.exports = function EntityValidationError(message, errors) {
     Error.captureStackTrace(this, this.constructor);
     this.name = this.constructor.name;
     this.message = message;
-    this.validationResult = validationResult;
+    this.errors = errors || {};
     this.code = 'authorization.invalidData';
 
-    this.formatResult = function (i18n) {
+    this.i18n = function (i18n) {
         var formattedResult = {
             errors: {}
         };
 
-        if (this.validationResult && this.validationResult.errors) {
-            for (let property in this.validationResult.errors) {
+        if (this.errors) {
+            for (let property in this.errors) {
                 formattedResult.errors[property] = {
-                    param: this.validationResult.errors[property].path,
-                    message: i18n.__(this.validationResult.errors[property].message),
-                    value: this.validationResult.errors[property].value
+                    param: this.errors[property].path,
+                    message: i18n.__(this.errors[property].message),
+                    value: this.errors[property].value
                 };              
             }
         }

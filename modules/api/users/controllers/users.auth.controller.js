@@ -20,10 +20,15 @@ var issueJwt = function (id) {
 };
 
 exports.signup = function (req, res) {
+
     userService.signup(new RegistrationModel(req.body))
         .then(success => res.status(200).json())
-        .catch(EntityValidationError, error => res.status(400).json(error.formatResult(req.i18n)))
-        .catch(error => res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } }));
+        .catch(EntityValidationError, error => {
+            return res.status(400).json(error.i18n(req.i18n));
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
 };
 
 exports.confirmAccount = function (req, res) {
@@ -71,7 +76,7 @@ exports.openAuthCall = function (strategy, scope) {
                 .then(stateToken => {
                     passport.authenticate(strategy, {
                         scope: scope,
-                        state: stateToken,           
+                        state: stateToken,
                     })(req, res, next);
                 })
                 .catch(error => {
@@ -88,19 +93,29 @@ exports.openAuthCallback = function (strategy) {
                 return passport.authenticate(strategy, function (err, result) {
                     externalLoginService.removeOAuthState(req.query.state);
 
-                    if (err) return res.redirect(state.redirectUrl + '?error=' + err.code + (err instanceof ExternalUserAlreadyRegisteredError ? ('&email=' + err.email) : ''));
-
-                    else if (!result.user) return res.redirect(state.redirectUrl + '?error=' + config.errorCodes.authorization.userAlreadySignedIn.code);
-
-                    else if (!err && result.user) return res.redirect(state.redirectUrl + '?provider=' + strategy + '&access_token=' + result.accessToken);
+                    if (err) {
+                        return res.redirect(state.redirectUrl + '?error=' + err.code + (err instanceof ExternalUserAlreadyRegisteredError ? ('&email=' + err.email) : ''));
+                    }
+                    else if (!result.user) {
+                        return res.redirect(state.redirectUrl + '?error=' + config.errorCodes.authorization.userAlreadySignedIn.code);
+                    }
+                    else if (!err && result.user) {
+                        return res.redirect(state.redirectUrl + '?provider=' + strategy + '&access_token=' + result.accessToken);
+                    }
 
                 })(req, res, next);
             })
             .catch(error => {
                 externalLoginService.removeOAuthState(req.query.state);
-                return res.status(500).send('<h1>Done fucked up bitch</h1>');
+                return res.status(500).send('<h1>An error occurred</h1>');
             });
     };
+};
+
+exports.removeExternalLogin = function (req, res) {
+    return externalLoginService.removeExternalLogin(req.user, req.externalLogin)
+        .then(result => res.status(204).json())
+        .catch(error => res.status(400).json({ errors: { message: req.i18n.__(error.message) } }));
 };
 
 exports.exchangeAccessToken = function (req, res) {

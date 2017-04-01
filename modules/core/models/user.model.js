@@ -13,7 +13,6 @@ var mongoose = require('mongoose'),
 */
 var validateLocalStrategyProperty = function (property) {
     return this.provider !== 'jwt' || property.length;
-
    // return ((this.provider !== 'jwt' && !this.updated) || property.length);
 };
 
@@ -97,22 +96,24 @@ UserSchema.pre('save', function (next) {
     if (this.password && this.isModified('password')) {
         this.salt = crypto.randomBytes(16).toString('base64');
         this.password = this.hashPassword(this.password);
-    }
+    }   
 
     next();
 });
 
-UserSchema.pre('validate', function (next) {
+UserSchema.pre('validate', function (next, err, a) {
     if (this.provider === 'jwt' && this.password && this.isModified('password')) {
         var result = owasp.test(this.password);
         if (result.errors.length) {
             var error = result.errors.join(' ');
             this.invalidate('password', error);
         }
-    }
+    }   
 
-    next();
+    next({ something: 'is fucky'});
 });
+
+
 
 UserSchema.methods.hashPassword = function (password) {
     if (this.salt && password) {

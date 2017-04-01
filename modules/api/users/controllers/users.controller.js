@@ -13,8 +13,12 @@ exports.update = function (req, res) {
 
     userService.update(user)
         .then(user => { return res.status(200).json(new MeModel(user)); })
-        .catch(EntityValidationError, error => { return res.status(400).json(error.formatResult(req.i18n)); })
-        .catch(error => { return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } }); });
+        .catch(EntityValidationError, error => {
+            return res.status(400).json(error.i18n(req.i18n));
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
 };
 
 exports.changeProfilePicture = function (req, res) {
@@ -26,8 +30,12 @@ exports.changeProfilePicture = function (req, res) {
             return userService.update(user);
         })
         .then(user => res.json(new MeModel(user)))
-        .catch(EntityValidationError, error => res.status(400).json(error.formatResult(req.i18n)))
-        .catch(error => res.status(400).json({ errors: { message: req.i18n.__(error.message) } }));
+        .catch(EntityValidationError, error => {
+            return res.status(400).json(error.i18n(req.i18n));
+        })
+        .catch(error => {
+            return res.status(400).json({ errors: { message: req.i18n.__(error.message) } });
+        });
 };
 
 exports.me = function (req, res) {

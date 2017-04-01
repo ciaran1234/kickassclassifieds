@@ -6,6 +6,7 @@ var authenticate = require('../../core/security/authenticate'),
     registrationValidator = require('../validation/registration.validator'),
     resetPasswordConfirmedValidator = require('../validation/resetPassword.confirm.validator'),
     resetPasswordRequestValidator = require('../validation/resetPassword.request.validator'),
+    removeExternalLoginValidator = require('../validation/remove.externalLogin.validator'),
     signinValidator = require('../validation/signin.validator'),
     config = require('../../../../config/config');
 
@@ -21,6 +22,8 @@ module.exports = function (app) {
    
     app.route('/api/auth/google').get(externalSigninValidator, auth.openAuthCall('google', config.google.scope));
     app.route('/api/auth/google/callback').get(auth.openAuthCallback('google'));
+
+    app.route('/api/auth/social').delete(authenticate, removeExternalLoginValidator, auth.removeExternalLogin);
 
     app.route('/api/auth/exchange').get(auth.exchangeAccessToken);
 
