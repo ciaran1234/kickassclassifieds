@@ -157,5 +157,11 @@ exports.exchangeToken = function (loginProvider, providerKey) {
 
             return externalLogin;
         })
+        .then(externalLogin => User.findById(externalLogin._id.userId))
+        .then(user => {
+            if (!user) throw new EntityNotFoundError('user not found');
+
+            return user;
+        })
         .catch(error => { throw error; });
 };

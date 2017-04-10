@@ -39,10 +39,11 @@ var addExternalProviderToExistingAccount = function (user, providerUserProfile) 
 
     user.externalLogins.push(additionalLogin._id);
     user.markModified('externalLogins');
-    user.save();
-    additionalLogin._id.userId = user._id;
-    additionalLogin.save();
-    return user;
+    return user.save().then(user => {
+        additionalLogin._id.userId = user._id;
+        additionalLogin.save();
+        return user;
+    });
 };
 
 var addExternalProvider = function (providerUserProfile, authenticatedId) {
@@ -61,6 +62,7 @@ var addExternalProvider = function (providerUserProfile, authenticatedId) {
             return User.findById(authenticatedId) //check if its an existing account with different email
                 .then(localUser => {
                     if (localUser) {
+
                         return addExternalProviderToExistingAccount(localUser, providerUserProfile);
                     }
 
@@ -76,6 +78,7 @@ var addExternalProvider = function (providerUserProfile, authenticatedId) {
                                 providerKey: providerUserProfile.providerData.id
                             }
                         });
+
                         user.externalLogins.push(externalLogin._id);
 
                         return user.save()
@@ -93,8 +96,8 @@ var addExternalProvider = function (providerUserProfile, authenticatedId) {
 };
 
 exports.removeExternalLogin = function (user, externalLogin) {
-    let index = _.findIndex(user.externalLogins, externalLogin);
 
+    let index = _.findIndex(user.externalLogins, externalLogin);
 
     return User.findById(user._id)
         .then(user => {
@@ -103,7 +106,7 @@ exports.removeExternalLogin = function (user, externalLogin) {
             user.externalLogins.splice(index, 1);
             return user.save();
         })
-        .then(user => ExternalLogin.remove(externalLogin))
+        .then(user => ExternalLogin.remove({'_id.loginProvider': externalLogin.loginProvider, '_id.providerKey': externalLogin.providerKey }))       
         .then(result => true)
         .catch(error => { throw error; });
 

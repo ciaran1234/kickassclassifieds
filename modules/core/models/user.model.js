@@ -8,17 +8,11 @@ var mongoose = require('mongoose'),
     generatePassword = require('generate-password'),
     owasp = require('owasp-password-strength-test');
 
-/**
-* A Validation function for local strategy properties
-*/
 var validateLocalStrategyProperty = function (property) {
     return this.provider !== 'jwt' || property.length;
    // return ((this.provider !== 'jwt' && !this.updated) || property.length);
 };
 
-/**
- * A Validation function for local strategy email
- */
 var validateLocalStrategyEmail = function (email) {
     return ((this.provider !== 'jwt' && !this.updated) || validator.isEmail(email));
 };

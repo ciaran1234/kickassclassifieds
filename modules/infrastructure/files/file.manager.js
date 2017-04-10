@@ -33,6 +33,38 @@ module.exports = {
             });
         });
     },
+    saveFiles(req, res, cb) {
+        var guid = Guid.raw();
+
+        var storage = multer.diskStorage({
+            destination: function (req, file, cb) {
+                cb(null, path.resolve(config.uploads.profileUpload.dest));
+            },
+            filename: function (req, file, cb) {
+                cb(null, multerExtension.uniqueFileName(guid, file));
+            }
+        });
+
+        var upload = multer({ storage: storage, fileFilter: multerExtension.imageFilter }).array('images');
+
+        return upload(req, res, function (uploadError) {
+
+            if (!uploadError && (!req.files || !req.files.length)) {
+                return cb(new Error('validation.files.notFound'));
+            }
+
+            let filePaths = [];
+
+            for(let index in req.files) {
+                let filePath = multerExtension.uniqueFilePath(guid, req.files[index]);
+                filePaths.push(filePath);
+            }
+           
+            return cb(uploadError, {
+                filePaths: filePaths
+            });
+        });
+    },
     deleteFile() {
         throw new NotImplementedError('file deletion not implemented');
     }

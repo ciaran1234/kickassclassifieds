@@ -8,7 +8,8 @@ var _ = require('lodash'),
     EntityValidationError = require('../../../core/errors/entityValidation.error'),
     InvalidExternalTokenError = require('../../../core/errors/invalidExternalToken.error'),
     ExternalUserAlreadyRegisteredError = require('../../../core/errors/externalUserAlreadyRegistered.error'),
-    RegistrationModel = require('../models/registration.model'),
+    RegistrationModel = require('../models/registration.model'),   
+    MeModel = require('../models/me.model'),
     SigninModel = require('../models/signin.model'),
     externalLoginValidator = Promise.promisifyAll(require('../validation/externalLogin.validator')),
     userService = require('../../../services/users/users.service'),
@@ -51,7 +52,7 @@ exports.resetPasswordConfirmed = function (req, res) {
 
 exports.signin = function (req, res, next) {
     userService.signin(new SigninModel(req.body))
-        .then(user => res.status(200).json({ token: issueJwt(user._id) }))
+        .then(user => res.status(200).json({ token: issueJwt(user._id), user: new MeModel(user) }))
         .catch(error => res.status(400).json({ errors: { message: req.i18n.__("authorization.invalidUsernamOrPassword") } }));
 };
 
@@ -112,8 +113,8 @@ exports.openAuthCallback = function (strategy) {
     };
 };
 
-exports.removeExternalLogin = function (req, res) {
-    return externalLoginService.removeExternalLogin(req.user, req.externalLogin)
+exports.removeExternalLogin = function (req, res) {    
+    return externalLoginService.removeExternalLogin(req.user, req.body)
         .then(result => res.status(204).json())
         .catch(error => res.status(400).json({ errors: { message: req.i18n.__(error.message) } }));
 };
@@ -121,8 +122,8 @@ exports.removeExternalLogin = function (req, res) {
 exports.exchangeAccessToken = function (req, res) {
     return externalLoginValidator.verifyExternalLoginAsync(req.query.provider, req.query.access_token)
         .then(externalToken => userService.exchangeToken(externalToken.loginProvider, externalToken.providerKey))
-        .then(externalLogin => {
-            return res.json({ token: issueJwt(externalLogin._id.userId) });
+        .then(user => {
+            return res.json({ token: issueJwt(user._id), user: new MeModel(user) });
         })
         .catch(error => res.status(400).json({ errors: { message: req.i18n.__("authorization.invalidExternalAccessToken") } }));
 };
