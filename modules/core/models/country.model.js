@@ -41,6 +41,18 @@ var CountrySchema = new Schema({
                 }]
             }
         }]
+    },
+    currency: {
+        type: {
+            ccy: {
+                type: String,
+                required: true
+            },
+            ccyNbr: {
+                type: Number,
+                required: true
+            }
+        }
     }
 });
 

@@ -19,10 +19,10 @@ function ClassifiedForm(model) {
     this.states = model.states;
 
     this.price = model.price && model.price.value ? {
-        value: model.price.value,
+        value: model.price.value.toString(),
         ccy: model.price.ccy,
         ccyNbr: model.price.ccyNbr
-    } : undefined;
+    } : undefined;    
 }
 
 module.exports = ClassifiedForm;

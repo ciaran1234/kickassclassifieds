@@ -14,11 +14,10 @@ exports.list = function (req, res) {
         .catch(error => res.status(500).json());
 };
 
-exports.get = function (req, res) {
+exports.get = function (req, res) {  
     Classified.findById(req.params.id)
         .then(classified => {
             if (!classified) return res.status(404).json();
-
             return res.status(200).json(classified);
         })
         .catch(error => {
@@ -31,7 +30,7 @@ exports.insert = function (req, res) {
     var classified = new Classified(form);
 
     return classified.save()
-        .then(classified => {
+        .then(classified => {          
             return res.status(201).json(classified);
         })
         .catch(mongoose.Error.ValidationError, error => {
@@ -49,13 +48,13 @@ exports.uploadImages = function (req, res) {
     return Classified.findById(req.params.id)
         .then(c => {
             if (!c) throw new EntityNotFoundError('classified not found');
-            
+
             classified = c;
             return fileManager.saveFilesAsync(req, res);
         })
-        .then(images => {
-            for (let index in images.filePaths) {
-                classified.images.push(images.filePaths[index]);
+        .then(result => {
+            for (let i in result.filePaths) {
+                classified.images.push(result.filePaths[i]);
             }
 
             return classified;

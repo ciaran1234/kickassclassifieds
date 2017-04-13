@@ -18,6 +18,7 @@ module.exports = {
     app: {
         title: defaultEnvConfig.app.title + ' - Development Environment'
     },
+    imageFolder: 'http://localhost:' + (process.env.PORT || 3000) + '/images/',
     facebook: {
         clientID: process.env.FACEBOOK_ID || '431431603869202',
         clientSecret: process.env.FACEBOOK_SECRET || '124031dacc0f40ebf6b5119514eba438',
@@ -57,7 +58,7 @@ module.exports = {
     livereload: true,
     cors: {
         enabled: true,
-        allowedOrigins: ['*']
+        allowedOrigins: ['http://localhost:4200']
     },
     whitelistUrls: ['http://localhost:4200']
 };

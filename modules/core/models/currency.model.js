@@ -24,13 +24,7 @@ var CurrencySchema = new Schema({
     ctryNm: {
         type: String,
         required: 'validation.currency.ctryNm.required'
-    },
-    symbol: {
-        type: String,
-    },
-    symbolNative: {
-        type: String
-    }
+    }  
 });
 
 CurrencySchema.plugin(integerValidator);

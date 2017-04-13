@@ -19,9 +19,10 @@ var validatePrice = function hasPrice(property) {
 };
 
 var ClassifiedSchema = new Schema({
-    title: {
+    title: {      
         type: String,
         required: 'validation.classified.title.required'
+
     },
     description: {
         type: String,
@@ -39,7 +40,6 @@ var ClassifiedSchema = new Schema({
                 required: 'validation.classified.category.name.required'
             }
         }
-
     },
     country: {
         type: {
@@ -70,7 +70,7 @@ var ClassifiedSchema = new Schema({
     price: {
         value: {
             type: mongoose.Schema.Types.Decimal128,
-            required: [validatePrice, 'validation.classified.price.value.required']
+            required: [validatePrice, 'validation.classified.price.value.required']          
         },
         ccy: {
             type: String,
@@ -80,9 +80,6 @@ var ClassifiedSchema = new Schema({
             type: Number,
             integer: 'validation.classified.price.ccyNbr.integer',
             required: [validatePrice, 'validation.classified.price.ccyNbr.required']
-        },
-        symbol: {
-            type: String
         }
     },
     advertType: {
@@ -101,5 +98,4 @@ var ClassifiedSchema = new Schema({
 });
 
 ClassifiedSchema.plugin(integerValidator);
-
 mongoose.model('Classified', ClassifiedSchema);
