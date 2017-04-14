@@ -19,7 +19,7 @@ var validatePrice = function hasPrice(property) {
 };
 
 var ClassifiedSchema = new Schema({
-    title: {      
+    title: {
         type: String,
         required: 'validation.classified.title.required'
 
@@ -70,7 +70,7 @@ var ClassifiedSchema = new Schema({
     price: {
         value: {
             type: mongoose.Schema.Types.Decimal128,
-            required: [validatePrice, 'validation.classified.price.value.required']          
+            required: [validatePrice, 'validation.classified.price.value.required']
         },
         ccy: {
             type: String,
@@ -87,6 +87,22 @@ var ClassifiedSchema = new Schema({
         enum: ['sell', 'buy'], //this may need some rethinking....
         default: 'sell',
         required: 'validation.classified.advertType.required'
+    },
+    advertiser: {
+        type: {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true
+            },
+            name: {
+                type: String,
+                required: true
+            },
+            dateRegistred: {
+                type: Date,
+                required: true
+            }
+        }
     },
     created: {
         type: Date,

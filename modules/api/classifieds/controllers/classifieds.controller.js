@@ -26,7 +26,7 @@ exports.get = function (req, res) {
 };
 
 exports.insert = function (req, res) {
-    var form = new ClassifiedForm(req.body);
+    var form = new ClassifiedForm(req.body, req.user);
     var classified = new Classified(form);
 
     return classified.save()

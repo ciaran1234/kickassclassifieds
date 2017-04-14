@@ -1,6 +1,6 @@
 'use strict';
 
-function ClassifiedForm(model) {
+function ClassifiedForm(model, user) {
     this.title = model.title;
     this.description = model.description;
     this.category = {
@@ -22,7 +22,13 @@ function ClassifiedForm(model) {
         value: model.price.value.toString(),
         ccy: model.price.ccy,
         ccyNbr: model.price.ccyNbr
-    } : undefined;    
+    } : undefined;
+
+    this.advertiser = {
+        _id: user._id,
+        name: user.firstName.concat(' ', user.lastName),
+        dateRegistered: user.created
+    };
 }
 
 module.exports = ClassifiedForm;
