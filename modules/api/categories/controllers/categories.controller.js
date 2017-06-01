@@ -5,8 +5,19 @@ var Category = mongoose.model('Category');
 var EntityValidationError = require('../../../core/errors/entityValidation.error');
 
 exports.list = function (req, res) {
+    Category.find({})
+        .select('_id name parent')
+        .sort('name')
+        .then(categories => {
+            return res.status(200).json(categories);
+        })
+        .catch(error => res.status(500).json());
+};
+
+exports.parents = function (req, res) {
     Category.find({ parent: { $exists: false } })
         .select('_id name')
+        .sort('name')
         .then(categories => {
             return res.status(200).json(categories);
         })
@@ -15,7 +26,8 @@ exports.list = function (req, res) {
 
 exports.children = function (req, res) {
     Category.find({ parent: req.params.id })
-        .select('_id name')
+        .select('_id name details')
+        .sort('name')
         .then(categories => {
             return res.status(200).json(categories);
         })
@@ -23,7 +35,7 @@ exports.children = function (req, res) {
 };
 
 exports.get = function (req, res) {
-    Category.findById(req.params.id).select('_id name parent children')
+    Category.findById(req.params.id).select('_id name details parent children')
         .then(category => {
             if (!category) return res.status(404).json();
 

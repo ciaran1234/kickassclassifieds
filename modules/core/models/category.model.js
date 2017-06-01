@@ -15,7 +15,10 @@ var CategorySchema = new Schema({
     children: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category'
-    }]
+    }],
+    details: {
+        type: mongoose.Schema.Types.Mixed
+    }
 });
 
 mongoose.model('Category', CategorySchema);

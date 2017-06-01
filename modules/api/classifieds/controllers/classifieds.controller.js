@@ -6,15 +6,17 @@ var EntityNotFoundError = require('../../../core/errors/entityNotFound.error');
 var EntityValidationError = require('../../../core/errors/entityValidation.error');
 var ClassifiedForm = require('../models/classified.form.model');
 var fileManager = require('../../../infrastructure/files/file.manager');
+var ClassifiedFilter = require('../filters/classified.filter');
+
 exports.list = function (req, res) {
-    Classified.find()
-        .then(classifieds => {
+    Classified.find(new ClassifiedFilter(req))
+        .then(classifieds => {            
             return res.status(200).json(classifieds);
         })
         .catch(error => res.status(500).json());
 };
 
-exports.get = function (req, res) {  
+exports.get = function (req, res) {
     Classified.findById(req.params.id)
         .then(classified => {
             if (!classified) return res.status(404).json();
@@ -30,7 +32,7 @@ exports.insert = function (req, res) {
     var classified = new Classified(form);
 
     return classified.save()
-        .then(classified => {          
+        .then(classified => {
             return res.status(201).json(classified);
         })
         .catch(mongoose.Error.ValidationError, error => {

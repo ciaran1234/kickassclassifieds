@@ -5,9 +5,7 @@ var Schema = mongoose.Schema;
 var integerValidator = require('mongoose-integer');
 var _ = require('lodash');
 
-
 var validatePrice = function hasPrice(property) {
-
     if (this.price.value === undefined &&
         this.price.ccy === undefined &&
         this.price.ccyNbr === undefined) {
@@ -40,6 +38,9 @@ var ClassifiedSchema = new Schema({
                 required: 'validation.classified.category.name.required'
             }
         }
+    },
+    details: {
+        type: mongoose.Schema.Types.Mixed
     },
     country: {
         type: {
@@ -113,5 +114,6 @@ var ClassifiedSchema = new Schema({
     },
 });
 
+ClassifiedSchema.index({ title: "text"});
 ClassifiedSchema.plugin(integerValidator);
 mongoose.model('Classified', ClassifiedSchema);
