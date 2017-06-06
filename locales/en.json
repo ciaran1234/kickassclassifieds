@@ -38,7 +38,7 @@
 				"length": "Max length of 40 characters for last name"
 			},
 			"email": {
-				"invalid": "Please fill in a valid email"
+				"invalid": "Please enter a valid email"
 			},
 			"password": {
 				"required": "Password is required",
@@ -85,10 +85,12 @@
 		},
 		"classified": {
 			"title": {
-				"required": "Title is required"
+				"required": "Title is required",
+				"length": "Max length of 100 characters for title"
 			},
 			"description": {
-				"required": "Description is required"
+				"required": "Description is required",
+				"length": "Max length of 2000 characters for description"
 			},
 			"price": {
 				"value": {
@@ -104,12 +106,31 @@
 			},
 			"advertType": {
 				"required": "Please specify the type of add"
+			},
+			"country": {
+				"code": {
+					"required": "Country code is required",
+					"integer": "Country number must be an integer"
+				},
+				"name": {
+					"required": "Country name is required",
+					"length": "Max length of 50 characters for country name"
+				}
+			},
+			"region": {
+				"required": "Region/State is required",
+				"length": "Max length of 50 characters for region/state"
 			}
 		},
 		"category": {
+			"_id": {
+				"required": "Category id is required",
+				"objectId": "Invalid Category id provided"
+			},
 			"name": {
 				"required": "Category name is required"
-			}
+			},
+			"notFound": "Category does not exist"		
 		},
 		"currency": {
 			"ccy": {

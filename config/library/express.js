@@ -112,14 +112,13 @@ module.exports.initMiddleware = function (app) {
 
                 return isValid;
             },
-            isValidObjectId: function (value) {
-                
-                if(value && value.match(/^[0-9a-fA-F]{24}$/)) {
+            isValidObjectId: function (value) {       
+                if(value && (typeof value === 'string' || value instanceof String) && value.match(/^[0-9a-fA-F]{24}$/)) {
                     return true;
                 }
 
                 return false;              
-            }
+            }          
         }
     }));
 

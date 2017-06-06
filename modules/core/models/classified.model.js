@@ -114,6 +114,5 @@ var ClassifiedSchema = new Schema({
     },
 });
 
-ClassifiedSchema.index({ title: "text"});
 ClassifiedSchema.plugin(integerValidator);
 mongoose.model('Classified', ClassifiedSchema);

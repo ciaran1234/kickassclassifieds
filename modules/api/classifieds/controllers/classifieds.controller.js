@@ -8,8 +8,8 @@ var ClassifiedForm = require('../models/classified.form.model');
 var fileManager = require('../../../infrastructure/files/file.manager');
 var ClassifiedFilter = require('../filters/classified.filter');
 
-exports.list = function (req, res) {
-    Classified.find(new ClassifiedFilter(req))
+exports.list = function (req, res) {       
+    Classified.find(new ClassifiedFilter(req)).limit(30).sort({'created': -1})
         .then(classifieds => {            
             return res.status(200).json(classifieds);
         })

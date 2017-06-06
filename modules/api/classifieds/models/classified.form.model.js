@@ -2,11 +2,13 @@
 
 function ClassifiedForm(model, user) {
     this.title = model.title;
-    this.description = model.description;
+    this.description = model.description;   
+
     this.category = {
         _id: model.category._id,
         name: model.category.name
     };
+
     this.country = {
         code: model.country.code || model.country.countryCode,
         name: model.country.name
@@ -29,7 +31,7 @@ function ClassifiedForm(model, user) {
         name: user.firstName.concat(' ', user.lastName),
         dateRegistered: user.created
     };
-
+    
     this.details = model.details;
 }
 
