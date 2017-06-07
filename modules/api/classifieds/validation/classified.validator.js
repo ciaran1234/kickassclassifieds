@@ -32,7 +32,7 @@ module.exports = function ClassifiedValidator(req, res, next) {
             notEmpty: {
                 errorMessage: req.i18n.__('validation.category.name.required')
             }
-        },
+        },      
         'country.countryCode': {
             notEmpty: {
                 errorMessage: req.i18n.__('validation.classified.country.code.required')
@@ -46,7 +46,7 @@ module.exports = function ClassifiedValidator(req, res, next) {
                 errorMessage: req.i18n.__('validation.classified.country.name.required')
             },
             isLength: {
-                options: [{max: 50}],
+                options: [{ max: 50 }],
                 errorMessage: req.i18n.__('validation.classified.country.name.length')
             }
         },
@@ -55,10 +55,10 @@ module.exports = function ClassifiedValidator(req, res, next) {
                 errorMessage: req.i18n.__('validation.classified.region.required')
             },
             isLength: {
-                options: [{max: 50}],
+                options: [{ max: 50 }],
                 errorMessage: req.i18n.__('validation.classified.region.length')
             }
-        }        
+        }
     });
 
 

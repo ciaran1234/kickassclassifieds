@@ -22,6 +22,17 @@
 		"invalidData": "Invalid data provider"
 	},
 	"validation": {
+		"required": "{{property}} is required",
+		"hasInvalidOption": "{{property}} has an invalid option",
+		"hasInvalidType": {
+			"string":  "{{property}} is an invalid value",
+			"int":  "{{property}} is an invalid integer",
+			"decimal":  "{{property}} is an invalid number",
+			"date":  "{{property}} is an invalid date",
+			"boolean": "{{property}} is an invalid boolean"
+		},
+		"hasInvalidMin": "{{property}} must be greater than {{min}}",
+		"hasInvalidMax": "{{property}} must be less than {{max}}",
 		"email": {
 			"alreadyExists": "This email is already taken. Please choose another",
 			"required": "Email is required",

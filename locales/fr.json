@@ -15,6 +15,16 @@
 		"invalidResetToken": "Invalid reset token provided"
 	},
 	"validation": {
+		"required": "{{property}} est requise",
+		"hasInvalidOption": "{{property}} a une option non valide",
+		"hasInvalidType": {
+			"string":  "{{property}} est une valeur non valide",
+			"int":  "{{property}} est un entier non valide",
+			"decimal":  "{{property}} est un nombre invalide",
+			"date":  "{{property}} est une date invalide"
+		},
+		"hasInvalidMin": "{{property}} doit être supérieure à {{min}}",
+		"hasInvalidMax": "{{property}} doit être inférieure à {{max}}",
 		"email": {
 			"alreadyExists": "Cet e-mail est déjà pris. Veuillez choisir un autre",
 			"required": "E-mail obligatoire",
@@ -41,6 +51,11 @@
 			},
 			"roles": {
 				"required": "Au moins un rôle est requis"
+			}
+		},
+		"category": {
+			"_id": {
+				"required": "L'identifiant de catégorie est requis"
 			}
 		},
 		"files.invalidImageFormat": "files.invalidImageFormat"
