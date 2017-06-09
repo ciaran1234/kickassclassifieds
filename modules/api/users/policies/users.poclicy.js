@@ -10,6 +10,9 @@ exports.invokeRolesPolicies = function () {
             resources: '/api/users/me',
             permissions: 'get'
         }, {
+            resources: '/api/users/me/classifieds',
+            permissions: 'get'
+        }, {
             resources: '/api/users',
             permissions: 'put'
         }, {

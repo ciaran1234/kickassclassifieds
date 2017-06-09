@@ -1,7 +1,7 @@
 'use strict';
 
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,   
+    Schema = mongoose.Schema,
     validator = require('validator'),
     uniqueValidator = require('mongoose-unique-validator'),
     crypto = require('crypto'),
@@ -10,7 +10,7 @@ var mongoose = require('mongoose'),
 
 var validateLocalStrategyProperty = function (property) {
     return this.provider !== 'jwt' || property.length;
-   // return ((this.provider !== 'jwt' && !this.updated) || property.length);
+    // return ((this.provider !== 'jwt' && !this.updated) || property.length);
 };
 
 var validateLocalStrategyEmail = function (email) {
@@ -35,7 +35,7 @@ var UserSchema = new Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        required: 'validation.email.required',        
+        required: 'validation.email.required',
         validate: [validateLocalStrategyEmail, 'validation.user.email.invalid']
     },
     emailConfirmed: {
@@ -83,14 +83,15 @@ var UserSchema = new Schema({
     },
     resetPasswordExpires: {
         type: Date
-    }
+    },
+    classifieds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classified' }],
 });
 
 UserSchema.pre('save', function (next) {
     if (this.password && this.isModified('password')) {
         this.salt = crypto.randomBytes(16).toString('base64');
         this.password = this.hashPassword(this.password);
-    }   
+    }
 
     next();
 });
@@ -102,9 +103,9 @@ UserSchema.pre('validate', function (next, err, a) {
             var error = result.errors.join(' ');
             this.invalidate('password', error);
         }
-    }   
+    }
 
-    next({ something: 'is fucky'});
+    next({ something: 'is fucky' });
 });
 
 
@@ -117,7 +118,7 @@ UserSchema.methods.hashPassword = function (password) {
     }
 };
 
-UserSchema.methods.authenticate = function (password) {  
+UserSchema.methods.authenticate = function (password) {
     return this.password === this.hashPassword(password) && this.emailConfirmed;
 };
 

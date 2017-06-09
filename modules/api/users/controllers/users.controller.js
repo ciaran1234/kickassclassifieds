@@ -1,12 +1,14 @@
 'use strict';
 
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    fileManager = Promise.promisifyAll(require('../../../infrastructure/files/file.manager')),
-    MeModel = require('../models/me.model'),
-    UpdateUserModel = require('../models/user.update.model'),
-    EntityValidationError = require('../../../core/errors/entityValidation.error'),
-    userService = require('../../../services/users/users.service');
+var _ = require('lodash');
+var Promise = require('bluebird');
+var fileManager = Promise.promisifyAll(require('../../../infrastructure/files/file.manager'));
+var MeModel = require('../models/me.model');
+var UpdateUserModel = require('../models/user.update.model');
+var EntityValidationError = require('../../../core/errors/entityValidation.error');
+var userService = require('../../../services/users/users.service');
+var mongoose = require('mongoose');
+var Classified = mongoose.model('Classified');
 
 exports.update = function (req, res) {
     var user = _.extend(req.user, new UpdateUserModel(req.body));
@@ -40,4 +42,12 @@ exports.changeProfilePicture = function (req, res) {
 
 exports.me = function (req, res) {
     res.json(req.user ? new MeModel(req.user) : null);
+};
+
+exports.classifieds = function (req, res) {
+    Classified.find({ _id: { $in: req.user.classifieds || [] } }).limit(30).sort({ 'created': -1 })
+        .then(classifieds => {           
+            return res.status(200).json(classifieds);
+        })
+        .catch(error => res.status(500).json());
 };

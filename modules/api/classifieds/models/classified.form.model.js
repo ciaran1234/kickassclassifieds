@@ -31,7 +31,7 @@ function ClassifiedForm(model, user) {
         name: user.firstName.concat(' ', user.lastName),
         dateRegistered: user.created
     };
-    
+     
     this.details = model.details;
 }
 

@@ -40,14 +40,14 @@ function hasValidType(value, type) {
             isValid = _.isString(value);
             break;
         case 'int':
-            isValid = _.isInteger(value);
+            isValid = !isNaN(value) && (function (x) { return (x | 0) === x; })(parseFloat(value));
             break;
         case 'decimal':
-            isValid = _.isFinite(value);
+            isValid = !isNaN(parseFloat(value)) && isFinite(value);
             break;
         case 'date':
             isValid = _.isDate(value);
-            break;      
+            break;
         case 'boolean':
             isValid = _.isBoolean(value);
             break;
@@ -119,6 +119,16 @@ function hasValidDetails(source, target, i18n, properties = ['details']) {
             else if (!hasValidMax(target[property], source[property].max)) {
                 errors.push(getError(properties, i18n.__('validation.hasInvalidMax'),
                     { property: source[property].displayName, max: source[property].max }));
+            }
+
+
+            //Number cleaning. Not a great solution but it's the only way to ensure value is actaully an int32 in mongodb
+            if (_.toLower(source[property].type) === 'int' && !errors.length) { 
+                target[property] = parseInt(target[property]);
+            }
+
+            if(_.toLower(source[property].type) === 'decimal' && !errors.length) {
+                target[property] = parseFloat(target[property]);
             }
 
             properties.pop(property);
