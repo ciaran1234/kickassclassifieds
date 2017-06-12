@@ -1,8 +1,10 @@
 'use strict';
 
 function ClassifiedForm(model, user) {
+
     this.title = model.title;
     this.description = model.description;   
+    this.advertType = model.advertType;
 
     this.category = {
         _id: model.category._id,

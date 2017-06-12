@@ -38,6 +38,9 @@ var UserSchema = new Schema({
         required: 'validation.email.required',
         validate: [validateLocalStrategyEmail, 'validation.user.email.invalid']
     },
+    phoneNumber: {
+        type: String
+    },
     emailConfirmed: {
         type: Boolean,
         default: false

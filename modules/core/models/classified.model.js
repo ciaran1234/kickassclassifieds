@@ -66,7 +66,10 @@ var ClassifiedSchema = new Schema({
         type: String
     }],
     images: [{
-        type: String
+        name: String,
+        path: String,
+        size: Number,
+        mimetype: String
     }],
     price: {
         value: {

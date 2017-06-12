@@ -33,7 +33,7 @@ module.exports = function ClassifiedValidator(req, res, next) {
                 errorMessage: req.i18n.__('validation.category.name.required')
             }
         },      
-        'country.countryCode': {
+        'country.code': {
             notEmpty: {
                 errorMessage: req.i18n.__('validation.classified.country.code.required')
             },

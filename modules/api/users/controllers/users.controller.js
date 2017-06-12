@@ -10,8 +10,8 @@ var userService = require('../../../services/users/users.service');
 var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
 
-exports.update = function (req, res) {
-    var user = _.extend(req.user, new UpdateUserModel(req.body));
+exports.update = function (req, res) {    
+    var user = _.extend(req.user, new UpdateUserModel(req.body));   
 
     userService.update(user)
         .then(user => { return res.status(200).json(new MeModel(user)); })

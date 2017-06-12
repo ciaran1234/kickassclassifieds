@@ -5,6 +5,7 @@ function MeModel(model) {
     this.firstName = model.firstName;
     this.lastName = model.lastName;
     this.email = model.email;
+    this.phoneNumber = model.phoneNumber;
     this.profileImageUrl = model.profileImageUrl;
     this.created = model.created;
     this.updated = model.updated;

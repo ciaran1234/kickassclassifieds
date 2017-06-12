@@ -19,6 +19,12 @@ module.exports = function UpdateUserValidator(req, res, next) {
                 options: [{ max: 40 }],
                 errorMessage: req.i18n.__('validation.user.lastName.length')
             }
+        },
+        'phoneNumber': {
+            isLength: {
+                options: [{max: 15}],
+                errorMessage: req.i18n.__('validation.user.phoneNumber.length')
+            }
         }
     });
 

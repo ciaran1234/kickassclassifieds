@@ -4,6 +4,7 @@
 function UpdateUserModel(model) { 
     this.firstName = model.firstName;
     this.lastName = model.lastName;
+    this.phoneNumber = model.phoneNumber;
 }
 
 module.exports = UpdateUserModel;

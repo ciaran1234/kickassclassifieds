@@ -16,7 +16,7 @@ exports.list = function (req, res) {
 
 exports.parents = function (req, res) {
     Category.find({ parent: { $exists: false } })
-        .select('_id name')
+        .select('_id name children')
         .sort('name')
         .then(categories => {
             return res.status(200).json(categories);
