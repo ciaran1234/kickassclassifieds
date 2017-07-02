@@ -9,8 +9,7 @@ var fileManager = require('../../../infrastructure/files/file.manager');
 var ClassifiedFilter = require('../filters/classified.filter');
 var _ = require('lodash');
 
-
-exports.list = function (req, res) {
+exports.list = function (req, res) { 
     Classified.find(new ClassifiedFilter(req)).limit(30).sort({ 'created': -1 })
         .then(classifieds => {
             return res.status(200).json(classifieds);
@@ -126,12 +125,12 @@ exports.deleteImages = function (req, res) {
                         index = j;
                         break;
                     }
-                }              
+                }
 
                 if (index > -1) {
                     classified.images.splice(index, 1);
                 }
-            }      
+            }
             return classified;
         })
         .then(classified => classified.save())

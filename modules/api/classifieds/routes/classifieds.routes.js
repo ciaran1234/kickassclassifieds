@@ -16,8 +16,7 @@ module.exports = function (app) {
 
     app.route('/api/classifieds/:id/images')
     .post(authenticate, objectIdValidator, classifieds.addImages)
-    .delete(authenticate, objectIdValidator, classifieds.deleteImages);
-  
+    .delete(authenticate, objectIdValidator, classifieds.deleteImages);  
 
     app.route('/api/classifieds').put(authenticate, ClassifiedValidator, ClassifiedDetailsValidator, classifieds.update);
 };

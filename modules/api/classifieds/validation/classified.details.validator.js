@@ -26,7 +26,7 @@ function getError(properties, message, options) {
 
     error[errorProperty] = {
         param: errorProperty,
-        messages: message
+        message: message
     };
 
     return error;
@@ -123,11 +123,11 @@ function hasValidDetails(source, target, i18n, properties = ['details']) {
 
 
             //Number cleaning. Not a great solution but it's the only way to ensure value is actaully an int32 in mongodb
-            if (_.toLower(source[property].type) === 'int' && !errors.length) { 
+            if (_.toLower(source[property].type) === 'int' && !errors.length) {
                 target[property] = parseInt(target[property]);
             }
 
-            if(_.toLower(source[property].type) === 'decimal' && !errors.length) {
+            if (_.toLower(source[property].type) === 'decimal' && !errors.length) {
                 target[property] = parseFloat(target[property]);
             }
 
@@ -161,7 +161,7 @@ module.exports = function ClassifiedDetailsValidator(req, res, next) {
                     return null;
                 }
                 else {
-                    return res.status(400).json(validationResult.errors);
+                    return res.status(400).json({ errors: validationResult.errors });
                 }
             }
         })

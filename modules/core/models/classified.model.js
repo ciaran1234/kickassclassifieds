@@ -98,7 +98,15 @@ var ClassifiedSchema = new Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 required: true
             },
-            name: {
+            firstName: {
+                type: String,
+                required: true
+            },
+            lastName: {
+                type: String,
+                required: true
+            },
+            email: {
                 type: String,
                 required: true
             },

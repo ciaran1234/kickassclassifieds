@@ -30,7 +30,9 @@ function ClassifiedForm(model, user) {
 
     this.advertiser = {
         _id: user._id,
-        name: user.firstName.concat(' ', user.lastName),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
         dateRegistered: user.created
     };
      

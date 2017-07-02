@@ -33,8 +33,7 @@ var validateAccountToken = function (key, token) {
             var currentDate = new Date();
             currentDate.setDate(currentDate.getDate());
             var expires = new Date(hash.expires);
-            let validExpiration = expires !== null ? currentDate.getTime() < expires.getTime() : true;
-            
+            let validExpiration = expires !== null ? currentDate.getTime() < expires.getTime() : true;            
 
             if (!validExpiration || hashSecret(config.accountTokenSecret, hash.salt) !== token) {               
                 throw new InvalidAccountTokenError('invalid token provided');
