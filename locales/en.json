@@ -25,10 +25,10 @@
 		"required": "{{property}} is required",
 		"hasInvalidOption": "{{property}} has an invalid option",
 		"hasInvalidType": {
-			"string":  "{{property}} is an invalid value",
-			"int":  "{{property}} is an invalid integer",
-			"decimal":  "{{property}} is an invalid number",
-			"date":  "{{property}} is an invalid date",
+			"string": "{{property}} is an invalid value",
+			"int": "{{property}} is an invalid integer",
+			"decimal": "{{property}} is an invalid number",
+			"date": "{{property}} is an invalid date",
 			"boolean": "{{property}} is an invalid boolean"
 		},
 		"hasInvalidMin": "{{property}} must be greater than {{min}}",
@@ -134,7 +134,7 @@
 			"region": {
 				"required": "Region/State is required",
 				"length": "Max length of 50 characters for region/state"
-			}
+			}			
 		},
 		"category": {
 			"_id": {
@@ -144,7 +144,7 @@
 			"name": {
 				"required": "Category name is required"
 			},
-			"notFound": "Category does not exist"		
+			"notFound": "Category does not exist"
 		},
 		"currency": {
 			"ccy": {
@@ -163,6 +163,25 @@
 			},
 			"ctryNm": {
 				"required": "Country name is required"
+			}
+		},
+		"message": {
+			"key": {
+				"required": "Message key is required"
+			},
+			"subject": {
+				"required": "Subject is required"
+			},
+			"body": {
+				"required": "Message body is required"
+			},
+			"classifiedId": {
+				"required": "Classified identifier is required",
+				"objectId": "Invalid Classifed identifier provided"
+			},
+			"url": {
+				"required": "Message callback url is required",
+				"valid": "Invalid callback url provided"
 			}
 		}
 	},
