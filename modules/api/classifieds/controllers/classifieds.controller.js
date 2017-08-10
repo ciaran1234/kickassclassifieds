@@ -8,9 +8,24 @@ var ClassifiedForm = require('../models/classified.form.model');
 var fileManager = require('../../../infrastructure/files/file.manager');
 var ClassifiedFilter = require('../filters/classified.filter');
 var _ = require('lodash');
+var ObjectId = mongoose.Types.ObjectId;
 
-exports.list = function (req, res) { 
-    Classified.find(new ClassifiedFilter(req)).limit(30).sort({ 'created': -1 })
+exports.list = function (req, res) {  
+    let favourites = [];
+
+    if(req.user && req.user.wishlist) {
+        favourites = req.user.wishlist;     
+    }
+
+    Classified.aggregate().match(new ClassifiedFilter(req)).sort({ 'created': -1 }).limit(30)
+        .project({
+            '_id': 1, 
+            'title': 1,
+            'image': { $arrayElemAt: [ "$images", 0 ] },
+            'price': 1,
+            'created': 1,
+            "favourite": { $in: ['$_id', favourites] }           
+        })
         .then(classifieds => {
             return res.status(200).json(classifieds);
         })

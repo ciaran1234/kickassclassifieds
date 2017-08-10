@@ -12,11 +12,12 @@ var enquiryEmail = require('../../infrastructure/email/classifiedEnquiryEmail');
 var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
 var EntityNotFoundError = require('../../core/errors/entityNotFound.error');
+var SendEmailToSelfError = require('../../core/errors/sendEmailToSelf.error');
 
 exports.get = function (key) {
     return client.lrangeAsync(key, 0, -1)
         .then(messages => {
-            if (messages.length === 0) throw new EntityNotFoundError('Message not found');
+            if (messages.length === 0) throw new EntityNotFoundError('Message not found');         
 
             for (let i in messages) {
                 messages[i] = JSON.parse(messages[i]);
@@ -55,7 +56,7 @@ exports.getReceived = function (user) {
         });
 };
 
-exports.send = function (message, user, callbackUrl) {
+exports.send = function (message, user) {
     let key;
     let to;
     let from = {
@@ -71,6 +72,10 @@ exports.send = function (message, user, callbackUrl) {
     return Classified.findById(message.classifiedId)
         .then(classified => {
             if (!classified) throw new EntityNotFoundError('Classified not found');
+
+            if(classified.advertiser._id.toString() === user._id.toString()) {                
+                throw new SendEmailToSelfError('Cannot send email to yourself');
+            }
 
             to = {
                 _id: classified.advertiser._id,
@@ -113,7 +118,7 @@ exports.send = function (message, user, callbackUrl) {
         .catch(error => { throw error; });
 };
 
-exports.reply = function (message, user, callbackUrl) {
+exports.reply = function (message, user) {
     let timestamp = new Date();
     timestamp.setDate(timestamp.getDate());
 

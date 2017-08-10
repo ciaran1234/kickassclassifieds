@@ -88,6 +88,7 @@ var UserSchema = new Schema({
         type: Date
     },
     classifieds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classified' }],
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classified' }]
 });
 
 UserSchema.pre('save', function (next) {

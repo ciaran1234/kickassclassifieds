@@ -94,7 +94,7 @@ module.exports.initMiddleware = function (app) {
             isValidOwaspPassword: function (value) {
                 if (!value) return false;
 
-                var result = owasp.test(value); //he password may not contain sequences of three or more repeated characters.
+                var result = owasp.test(value); //the password may not contain sequences of three or more repeated characters.
                 return result.errors && result.errors.length === 0;
             },
             isValidCallbackUrl: function (value) {
@@ -112,13 +112,21 @@ module.exports.initMiddleware = function (app) {
 
                 return isValid;
             },
-            isValidObjectId: function (value) {       
-                if(value && (typeof value === 'string' || value instanceof String) && value.match(/^[0-9a-fA-F]{24}$/)) {
+            isValidObjectId: function (value) {
+                if (value && (typeof value === 'string' || value instanceof String) && value.match(/^[0-9a-fA-F]{24}$/)) {
                     return true;
                 }
 
-                return false;              
-            }          
+                return false;
+            },
+            isNonExistingWishlistItem: function (value, param) {              
+                if(!param.wishlist || param.wishlist.length === 0) {
+                    return true;
+                }
+
+                return param.wishlist.indexOf(value) <= -1;
+            }
+
         }
     }));
 

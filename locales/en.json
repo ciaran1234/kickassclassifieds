@@ -67,7 +67,8 @@
 			},
 			"confirmationUrl": {
 				"required": "An account confirmation url is required"
-			}
+			},
+			"wishlistItemAlreadyExists": "You have already added this item to your wishlist"
 		},
 		"externalLogin": {
 			"loginProvider": "Social login provider required",
@@ -182,7 +183,8 @@
 			"url": {
 				"required": "Message callback url is required",
 				"valid": "Invalid callback url provided"
-			}
+			},
+			"sendToSelf": "Cannon send an email to yourself"
 		}
 	},
 	"security": {

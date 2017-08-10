@@ -10,8 +10,8 @@ var userService = require('../../../services/users/users.service');
 var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
 
-exports.update = function (req, res) {    
-    var user = _.extend(req.user, new UpdateUserModel(req.body));   
+exports.update = function (req, res) {
+    var user = _.extend(req.user, new UpdateUserModel(req.body));
 
     userService.update(user)
         .then(user => { return res.status(200).json(new MeModel(user)); })
@@ -46,8 +46,38 @@ exports.me = function (req, res) {
 
 exports.classifieds = function (req, res) {
     Classified.find({ _id: { $in: req.user.classifieds || [] } }).limit(30).sort({ 'created': -1 })
-        .then(classifieds => {           
+        .then(classifieds => {
             return res.status(200).json(classifieds);
         })
         .catch(error => res.status(500).json());
+};
+
+exports.addToWishlist = function (req, res) {
+    return userService.addToWishlist(req.user, req.params.id)
+        .then(user => {
+            return res.status(201).json(new MeModel(user));
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
+};
+
+exports.removeFromWishlist = function(req, res) {
+    return userService.removeFromWishlist(req.user, req.params.id)
+        .then(user => {
+            return res.status(204).json();
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
+};
+
+exports.getWishlist = function(req, res) {
+    return userService.getWishlist(req.user)
+        .then(wishlist => {
+            return res.status(200).json(wishlist);
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
 };

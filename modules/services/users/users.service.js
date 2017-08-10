@@ -6,6 +6,7 @@ var _ = require('lodash'),
     mongoose = require('mongoose'),
     User = mongoose.model('User'),
     ExternalLogin = mongoose.model('ExternalLogin'),
+    Classified = mongoose.model('Classified'),
     config = require('../../../config/config'),
     passwordResetEmail = require('../../infrastructure/email/passwordResetEmail'),
     accountConfirmationEmail = require('../../infrastructure/email/accountConfirmationEmail'),
@@ -19,13 +20,13 @@ Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 var client = redis.createClient(config.cache);
 
-var hashSecret = function (secret, salt) {    
-    return  crypto.pbkdf2Sync(secret, new Buffer(salt, 'base64'), 10000, 64).toString('base64');    
+var hashSecret = function (secret, salt) {
+    return crypto.pbkdf2Sync(secret, new Buffer(salt, 'base64'), 10000, 64).toString('base64');
 };
 
 var validateAccountToken = function (key, token) {
     return client.hgetallAsync(key + ':' + token)
-        .then(hash => {           
+        .then(hash => {
             if (!hash) {
                 throw new InvalidAccountTokenError('invalid token provided');
             }
@@ -33,9 +34,9 @@ var validateAccountToken = function (key, token) {
             var currentDate = new Date();
             currentDate.setDate(currentDate.getDate());
             var expires = new Date(hash.expires);
-            let validExpiration = expires !== null ? currentDate.getTime() < expires.getTime() : true;            
+            let validExpiration = expires !== null ? currentDate.getTime() < expires.getTime() : true;
 
-            if (!validExpiration || hashSecret(config.accountTokenSecret, hash.salt) !== token) {               
+            if (!validExpiration || hashSecret(config.accountTokenSecret, hash.salt) !== token) {
                 throw new InvalidAccountTokenError('invalid token provided');
             }
 
@@ -47,7 +48,7 @@ var validateAccountToken = function (key, token) {
 var generateAccountToken = function (key, user, expires) {
     var salt = crypto.randomBytes(16).toString('base64');
     var token = hashSecret(config.accountTokenSecret, salt);
-    
+
     var hash = [key + ':' + token, 'salt', salt, 'userId', user._id.toString(), 'expires', (expires || '')];
 
     return client.hmsetAsync(hash)
@@ -75,7 +76,7 @@ exports.confirmAccount = function (token) {
 exports.resetPassword = function (userId, password, token) {
     return validateAccountToken('resetpassword', token)
         .then(userId => User.findById(userId))
-        .then(user => {           
+        .then(user => {
             if (!user) throw new EntityNotFoundError('user does not exist');
 
             user.password = password;
@@ -121,8 +122,8 @@ exports.signup = function (registration) {
             let callbackUrl = registration.confirmationUrl + '?token=' + token;
             return accountConfirmationEmail.send(user, callbackUrl);
         })
-        .catch(mongoose.Error.ValidationError, err => { 
-            throw new EntityValidationError('user validation failed', err.errors); 
+        .catch(mongoose.Error.ValidationError, err => {
+            throw new EntityValidationError('user validation failed', err.errors);
         })
         .catch(error => { return Promise.reject(error); });
 };
@@ -144,9 +145,9 @@ exports.update = function (user) {
 
     return user.save()
         .then(user => { return user; })
-        .catch(error => { 
+        .catch(error => {
             throw new EntityValidationError('user update failed', error.errors);
-         });
+        });
 };
 
 exports.exchangeToken = function (loginProvider, providerKey) {
@@ -163,6 +164,51 @@ exports.exchangeToken = function (loginProvider, providerKey) {
             return user;
         })
         .catch(error => { throw error; });
+};
+
+exports.addToWishlist = function (user, classifiedId) {
+    user.wishlist = user.wishlist ? user.wishlist : [];
+    user.wishlist.push(classifiedId);
+
+    return user.save(classifiedId)
+        .then(user => {
+            return user;
+        })
+        .catch(error => {
+            throw error;
+        });
+};
+
+exports.removeFromWishlist = function (user, classifiedId) {
+    user.wishlist = user.wishlist ? user.wishlist : [];
+    let index = user.wishlist.indexOf(classifiedId);
+    user.wishlist.splice(index, 1);
+
+    return user.save().then(user => {
+        return user;
+    })
+        .catch(error => {
+            throw error;
+        });
+};
+
+exports.getWishlist = function (user) {
+    user.wishlist = user.wishlist ? user.wishlist : [];
+
+    return Classified.aggregate()
+        .match({
+            '_id': {
+                $in: user.wishlist
+            }
+        }).project({
+            '_id': 1,
+            'title': 1,
+            'image': { $arrayElemAt: ['$images', 0] },
+            'price': 1,
+            'created': 1
+        }).then(classifieds => {
+            return classifieds;
+        }).catch(error => { throw error; });
 };
 
 

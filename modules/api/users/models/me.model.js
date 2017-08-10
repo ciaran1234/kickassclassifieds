@@ -10,6 +10,7 @@ function MeModel(model) {
     this.created = model.created;
     this.updated = model.updated;
     this.externalLogins = model.externalLogins || [];
+    this.wishlist = model.wishlist || [];
 }
 
 module.exports = MeModel;

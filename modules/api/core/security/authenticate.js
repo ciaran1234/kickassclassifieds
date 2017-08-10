@@ -18,3 +18,4 @@ module.exports = function Authenticate(req, res, next) {
         return next(err, user, info);
     })(req, res, next);
 };
+
