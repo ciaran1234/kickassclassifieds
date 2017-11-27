@@ -21,7 +21,7 @@ Promise.promisifyAll(redis.Multi.prototype);
 var client = redis.createClient(config.cache);
 
 var hashSecret = function (secret, salt) {
-    return crypto.pbkdf2Sync(secret, new Buffer(salt, 'base64'), 10000, 64).toString('base64');
+    return crypto.pbkdf2Sync(secret, new Buffer(salt, 'base64'), 10000, 64, 'sha1').toString('base64');
 };
 
 var validateAccountToken = function (key, token) {

@@ -20,7 +20,7 @@ var hashOAuthProviderSecret = function (salt) {
     var buffer = new Buffer(salt, 'base64');
     var iterations = 10000;
     var keyLength = 64;
-    return crypto.pbkdf2Sync(config.oauthProviderSecret, buffer, iterations, keyLength).toString('base64');
+    return crypto.pbkdf2Sync(config.oauthProviderSecret, buffer, iterations, keyLength, 'sha1').toString('base64');
 };
 
 var addExternalProviderToExistingAccount = function (user, providerUserProfile) {

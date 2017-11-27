@@ -15,15 +15,20 @@ exports.list = function (req, res) {
 
     if(req.user && req.user.wishlist) {
         favourites = req.user.wishlist;     
-    }
+    }  
 
     Classified.aggregate().match(new ClassifiedFilter(req)).sort({ 'created': -1 }).limit(30)
         .project({
             '_id': 1, 
             'title': 1,
             'image': { $arrayElemAt: [ "$images", 0 ] },
+            'imageCount': { $size: '$images' },
             'price': 1,
             'created': 1,
+            'updated': 1,
+            'category': 1,
+            'region': 1,
+            'country': 1,
             "favourite": { $in: ['$_id', favourites] }           
         })
         .then(classifieds => {

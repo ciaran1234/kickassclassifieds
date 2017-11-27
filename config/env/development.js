@@ -4,7 +4,7 @@ var defaultEnvConfig = require('./default');
 
 module.exports = {
     db: {
-        uri: 'mongodb://localhost/kickassclassifieds',
+        uri: 'mongodb://ciaran_admin:Elecmag1!@cluster0-shard-00-00-6fvrq.mongodb.net:27017,cluster0-shard-00-01-6fvrq.mongodb.net:27017,cluster0-shard-00-02-6fvrq.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
         credentials: {
             user: '',
             password: ''

@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\modules",
+    "\\modules\\api",
+    "\\modules\\api\\classifieds",
+    "\\modules\\api\\classifieds\\controllers",
+    "\\modules\\api\\classifieds\\filters",
+    "\\modules\\api\\classifieds\\models",
+    "\\modules\\api\\core",
+    "\\modules\\api\\core\\security",
+    "\\modules\\api\\core\\validation"
+  ],
+  "SelectedNode": "\\modules\\api\\core\\validation",
+  "PreviewInSolutionExplorer": false
+}

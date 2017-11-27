@@ -87,7 +87,7 @@ exports.openAuthCall = function (strategy, scope) {
     };
 };
 
-exports.openAuthCallback = function (strategy) {
+exports.openAuthCallback = function (strategy) {  
     return function (req, res, next) {
         return externalLoginService.parseOAuthState(req.query.state)
             .then(state => {

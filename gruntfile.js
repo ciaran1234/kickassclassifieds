@@ -27,7 +27,7 @@ module.exports = function (grunt) {
             dev: {
                 script: 'app.js',
                 options: {
-                    nodeArgs: ['--debug'],
+                    nodeArgs: ['--inspect'],
                     ext: 'js',
                     watch: _.union(defaultAssets.gruntConfig, defaultAssets.allJS)
                 }
