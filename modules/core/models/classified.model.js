@@ -62,9 +62,9 @@ var ClassifiedSchema = new Schema({
             }
         }
     },
-    states: [{
+    state: {
         type: String
-    }],
+    },
     images: [{
         name: String,
         path: String,
@@ -85,6 +85,12 @@ var ClassifiedSchema = new Schema({
             integer: 'validation.classified.price.ccyNbr.integer',
             required: [validatePrice, 'validation.classified.price.ccyNbr.required']
         }
+    },
+    hidePrice: {
+        type: Boolean        
+    },
+    allowMessages: {
+        type: Boolean
     },
     advertType: {
         type: String,
@@ -107,6 +113,10 @@ var ClassifiedSchema = new Schema({
                 required: true
             },
             email: {
+                type: String,
+                required: true
+            },
+            phoneNumber: {
                 type: String,
                 required: true
             },

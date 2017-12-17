@@ -135,7 +135,26 @@
 			"region": {
 				"required": "Region/State is required",
 				"length": "Max length of 50 characters for region/state"
-			}			
+			}			,
+			"advertiser": {
+				"firstName": {
+					"required":  "Advertiser first name is required",
+					"length": "Max length of 40 characters for advertiser first name"
+				},
+				"lastName": {
+					"required":  "Advertiser first name is required",
+					"length": "Max length of 40 characters for advertiser last name"
+				},
+				"email": {					
+					"required": "Advertiser email is required",
+					"invalid": "Invalid advertiser email",
+					"length": "Max length of 256 characters for advertiser email"
+				},
+				"phoneNumber": {
+					"required":  "Advertiser phone name is required",
+					"length": "Advertiser phone number must be between 4 and 15 characters"
+				}
+			}
 		},
 		"category": {
 			"_id": {
@@ -184,7 +203,7 @@
 				"required": "Message callback url is required",
 				"valid": "Invalid callback url provided"
 			},
-			"sendToSelf": "Cannon send an email to yourself"
+			"sendToSelf": "Cannot send an email to yourself"
 		}
 	},
 	"security": {

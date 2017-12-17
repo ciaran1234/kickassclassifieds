@@ -41,6 +41,7 @@ exports.get = function (req, res) {
     Classified.findById(req.params.id)
         .then(classified => {
             if (!classified) return res.status(404).json();
+
             return res.status(200).json(classified);
         })
         .catch(error => {
@@ -48,7 +49,7 @@ exports.get = function (req, res) {
         });
 };
 
-exports.insert = function (req, res) {
+exports.insert = function (req, res) {  
     var form = new ClassifiedForm(req.body, req.user);
     var classified = new Classified(form);
     var user = req.user;

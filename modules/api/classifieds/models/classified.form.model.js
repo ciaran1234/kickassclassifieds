@@ -20,7 +20,7 @@ function ClassifiedForm(model, user) {
         name: model.region.name
     };
 
-    this.states = model.states;
+    this.state = model.state;
 
     this.price = model.price && model.price.value ? {
         value: model.price.value.toString(),
@@ -28,11 +28,16 @@ function ClassifiedForm(model, user) {
         ccyNbr: model.price.ccyNbr
     } : undefined;
 
+
+    this.hidePrice = model.hidePrice || false;
+    this.allowMessages = model.allowMessages || true;
+
     this.advertiser = {
         _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
+        firstName: model.advertiser.firstName,
+        lastName: model.advertiser.lastName,
+        email: model.advertiser.email,
+        phoneNumber: model.advertiser.phoneNumber,
         dateRegistered: user.created
     };
      

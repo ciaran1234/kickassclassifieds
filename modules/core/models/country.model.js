@@ -26,7 +26,7 @@ var CountrySchema = new Schema({
         type: [{
             name: {
                 type: String,
-                required: true                
+                required: true
             },
             shortCode: {
                 type: String,
@@ -34,10 +34,8 @@ var CountrySchema = new Schema({
             },
             states: {
                 type: [{
-                   name: {
-                       type: String,
-                       required: true
-                   }
+                    type: String,
+                    required: true
                 }]
             }
         }]

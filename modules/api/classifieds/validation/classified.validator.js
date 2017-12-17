@@ -58,6 +58,45 @@ module.exports = function ClassifiedValidator(req, res, next) {
                 options: [{ max: 50 }],
                 errorMessage: req.i18n.__('validation.classified.region.length')
             }
+        },
+        "advertiser.firstName": {
+            notEmpty: {
+                errorMessage: req.i18n.__('validation.classified.advertiser.firstName.required')
+            },
+            isLength: {
+                options: [{ max: 40 }],
+                errorMessage: req.i18n.__('validation.classified.advertiser.firstName.length')
+            }
+        },
+        'advertiser.lastName': {
+            notEmpty: {
+                errorMessage: req.i18n.__('validation.classified.advertiser.lastName.required')
+            },
+            isLength: {
+                options: [{ max: 40 }],
+                errorMessage: req.i18n.__('validation.classified.advertiser.lastName.length')
+            }
+        },
+        'advertiser.email': {
+            notEmpty: {
+                errorMessage: req.i18n.__("validation.classified.advertiser.email.required"),
+            },
+            isEmail: {
+                errorMessage: req.i18n.__("validation.classified.advertiser.email.invalid")
+            },
+            isLength: {
+                options: [{ max: 256 }],
+                errorMessage: req.i18n.__('validation.classified.advertiser.email.length')
+            }
+        },
+        'advertiser.phoneNumber': {
+            notEmpty: {
+                errorMessage: req.i18n.__("validation.classified.advertiser.phoneNumber.required"),
+            },            
+            isLength: {
+                options: [{ min: 4, max: 15 }],
+                errorMessage: req.i18n.__('validation.classified.advertiser.phoneNumber.length')
+            }
         }
     });
 
