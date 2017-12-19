@@ -205,7 +205,11 @@ exports.getWishlist = function (user) {
             'title': 1,
             'image': { $arrayElemAt: ['$images', 0] },
             'price': 1,
-            'created': 1
+            'created': 1,
+            'category': 1,
+            'state': 1,
+            'region': 1,
+            'country': 1
         }).then(classifieds => {
             return classifieds;
         }).catch(error => { throw error; });
