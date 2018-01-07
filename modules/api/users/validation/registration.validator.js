@@ -35,6 +35,12 @@ module.exports = function RegistrationValidator(req, res, next) {
                 errorMessage: req.i18n.__('validation.user.firstName.length')
             }
         },
+        'phoneNumber': {          
+            isLength: {
+                options: [{ max: 15 }],
+                errorMessage: req.i18n.__('validation.user.phoneNumber.length')
+            }
+        },
         'lastName': {
             notEmpty: {
                 errorMessage: req.i18n.__("validation.user.lastName.required"),

@@ -192,15 +192,18 @@ exports.removeFromWishlist = function (user, classifiedId) {
         });
 };
 
-exports.getWishlist = function (user) {
+exports.getWishlist = function (user, filter) {
     user.wishlist = user.wishlist ? user.wishlist : [];
+    filter.query._id = { $in: user.wishlist };
 
-    return Classified.aggregate()
-        .match({
-            '_id': {
-                $in: user.wishlist
-            }
-        }).project({
+    let count = Classified.find(filter.query).count();
+
+    let data = Classified.aggregate()
+        .match(filter.query)
+        .sort(filter.sort)
+        .skip(filter.skip)
+        .limit(filter.take)
+        .project({
             '_id': 1,
             'title': 1,
             'image': { $arrayElemAt: ['$images', 0] },
@@ -213,6 +216,25 @@ exports.getWishlist = function (user) {
         }).then(classifieds => {
             return classifieds;
         }).catch(error => { throw error; });
+
+    return Promise.all([count, data])
+        .then(result => {
+            return {
+                count: result[0],
+                data: result[1]
+            };
+        }).catch(error => {
+            throw error;
+        });
+};
+
+exports.delete = function (user) {
+    return User.findByIdAndRemove(user._id)
+        .then(result => ExternalLogin.deleteMany({ '_id.userId': user._id }))
+        .then(r => { return true; })
+        .catch(error => {            
+            throw error;
+        });
 };
 
 

@@ -87,6 +87,22 @@ var UserSchema = new Schema({
     resetPasswordExpires: {
         type: Date
     },
+    settings: {
+        type: {
+            publicProfilePicture: {
+                type: Boolean,
+                default: true
+            },
+            receiveNewsletter: {
+                type: Boolean,
+                default: false
+            },
+            receiveEmailNotifications: {
+                type: Boolean,
+                default: true
+            }
+        }
+    },
     classifieds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classified' }],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classified' }]
 });
@@ -111,8 +127,6 @@ UserSchema.pre('validate', function (next, err, a) {
 
     next({ something: 'is fucky' });
 });
-
-
 
 UserSchema.methods.hashPassword = function (password) {
     if (this.salt && password) {

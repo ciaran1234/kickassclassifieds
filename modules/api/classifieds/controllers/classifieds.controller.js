@@ -11,18 +11,21 @@ var _ = require('lodash');
 var ObjectId = mongoose.Types.ObjectId;
 var Promise = require('bluebird');
 
-exports.list = function (req, res) {  
+exports.list = function (req, res) {
     let favourites = [];
 
     if (req.user && req.user.wishlist) {
         favourites = req.user.wishlist;
     }
-
+  
     let filter = new ClassifiedFilter(req);
-    let count = Classified.find(filter).count();
-    let data = Classified.aggregate().match(filter).sort({ 'created': -1 })
-        .skip((req.query.skip * req.query.top) || 0)
-        .limit(parseInt(req.query.top) || 30)
+
+    let count = Classified.find(filter.query).count();
+    let data = Classified.aggregate()
+        .match(filter.query)
+        .sort(filter.sort)
+        .skip(filter.skip)
+        .limit(filter.take)
         .project({
             '_id': 1,
             'title': 1,
@@ -39,13 +42,13 @@ exports.list = function (req, res) {
         .then(classifieds => {
             return classifieds;
         })
-        .catch(error => { return error; });
+        .catch(error => { throw error; });
 
     Promise.all([count, data])
         .then(result => {
             return res.status(200).json({
                 count: result[0],
-                items: result[1]
+                data: result[1]
             });
         }).catch(error => {
             return res.status(500).json();
@@ -105,6 +108,21 @@ exports.update = function (req, res) {
         .catch(mongoose.Error.ValidationError, error => {
             let errorResult = new EntityValidationError('user validation failed', error.errors);
             return res.status(400).json(errorResult.i18n(req.i18n));
+        })
+        .catch(error => {
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
+};
+
+exports.delete = function (req, res) {
+    
+    return Classified.findByIdAndRemove(req.params.id)
+        .then(result => {
+            console.log(result);
+
+            if (!result) return res.status(404).json();
+
+            return res.status(204).json();
         })
         .catch(error => {
             return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });

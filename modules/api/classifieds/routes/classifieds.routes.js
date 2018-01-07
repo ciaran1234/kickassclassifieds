@@ -13,7 +13,8 @@ module.exports = function (app) {
         .post(authenticate, ClassifiedValidator, ClassifiedDetailsValidator, classifieds.insert);
 
     app.route('/api/classifieds/:id')
-    .get(objectIdValidator, classifieds.get);
+    .get(objectIdValidator, classifieds.get)
+    .delete(authenticate, objectIdValidator, classifieds.delete);
 
     app.route('/api/classifieds/:id/images')
     .post(authenticate, objectIdValidator, classifieds.addImages)

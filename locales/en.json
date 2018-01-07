@@ -52,7 +52,8 @@
 				"invalid": "Please enter a valid email"
 			},
 			"phoneNumber": {
-				"length": "Max length of 15 characters for phone number"
+				"required": "Phone number is required",
+				"length": "Max lenght of 15 characters for phone number"
 			},
 			"password": {
 				"required": "Password is required",

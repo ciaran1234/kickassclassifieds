@@ -9,7 +9,10 @@ module.exports = function (app) {
     var users = require('../controllers/users.controller');
     app.route('/api/users/me').get(authenticate, userPolicy.isAllowed, users.me);
     app.route('/api/users/me/classifieds').get(authenticate, userPolicy.isAllowed, users.classifieds);
-    app.route('/api/users').put(authenticate, userPolicy.isAllowed, UpdateUserValidator, users.update);
+    app.route('/api/users')
+    .put(authenticate, userPolicy.isAllowed, UpdateUserValidator, users.update)
+    .delete(authenticate, users.delete);
+
     app.route('/api/users/picture').post(authenticate, userPolicy.isAllowed, users.changeProfilePicture);
 
     app.route('/api/users/wishlist').get(authenticate, users.getWishlist);

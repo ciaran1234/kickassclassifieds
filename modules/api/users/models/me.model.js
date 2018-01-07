@@ -11,6 +11,7 @@ function MeModel(model) {
     this.updated = model.updated;
     this.externalLogins = model.externalLogins || [];
     this.wishlist = model.wishlist || [];
+    this.settings = model.settings || {};
 }
 
 module.exports = MeModel;

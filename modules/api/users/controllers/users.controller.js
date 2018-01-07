@@ -9,6 +9,7 @@ var EntityValidationError = require('../../../core/errors/entityValidation.error
 var userService = require('../../../services/users/users.service');
 var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
+var ClassifiedFilter = require('../../classifieds/filters/classified.filter');
 
 exports.update = function (req, res) {
     var user = _.extend(req.user, new UpdateUserModel(req.body));
@@ -45,11 +46,39 @@ exports.me = function (req, res) {
 };
 
 exports.classifieds = function (req, res) {
-    Classified.find({ _id: { $in: req.user.classifieds || [] } }).limit(30).sort({ 'created': -1 })
+    let filter = new ClassifiedFilter(req);    
+    filter.query._id = { $in: req.user.classifieds || [] };
+    let count = Classified.find(filter.query).count();
+
+    let data = Classified.find(filter.query)
+        .limit(filter.take)
+        .skip(filter.skip)
+        .sort(filter.sort)
         .then(classifieds => {
-            return res.status(200).json(classifieds);
+            return classifieds;
         })
-        .catch(error => res.status(500).json());
+        .catch(error => { throw error; });
+
+    Promise.all([count, data])
+        .then(result => {
+            return res.status(200).json({
+                count: result[0],
+                data: result[1]
+            });
+        })
+        .catch(error => {
+            res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
+};
+
+exports.delete = function (req, res) {
+    return userService.delete(req.user)
+        .then(result => { 
+            return res.status(204).json();
+         })
+         .catch(error => {
+            res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } }); 
+         });
 };
 
 exports.addToWishlist = function (req, res) {
@@ -62,7 +91,7 @@ exports.addToWishlist = function (req, res) {
         });
 };
 
-exports.removeFromWishlist = function(req, res) {
+exports.removeFromWishlist = function (req, res) {
     return userService.removeFromWishlist(req.user, req.params.id)
         .then(user => {
             return res.status(204).json();
@@ -72,8 +101,10 @@ exports.removeFromWishlist = function(req, res) {
         });
 };
 
-exports.getWishlist = function(req, res) {
-    return userService.getWishlist(req.user)
+exports.getWishlist = function (req, res) {
+    let filter = new ClassifiedFilter(req);
+
+    return userService.getWishlist(req.user, filter)
         .then(wishlist => {
             return res.status(200).json(wishlist);
         })

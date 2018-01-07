@@ -13,11 +13,12 @@ var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
 var EntityNotFoundError = require('../../core/errors/entityNotFound.error');
 var SendEmailToSelfError = require('../../core/errors/sendEmailToSelf.error');
+var User = mongoose.model('User');
 
 exports.get = function (key) {
     return client.lrangeAsync(key, 0, -1)
         .then(messages => {
-            if (messages.length === 0) throw new EntityNotFoundError('Message not found');         
+            if (messages.length === 0) throw new EntityNotFoundError('Message not found');
 
             for (let i in messages) {
                 messages[i] = JSON.parse(messages[i]);
@@ -68,12 +69,15 @@ exports.send = function (message, user) {
 
     let timestamp = new Date();
     timestamp.setDate(timestamp.getDate());
+    let canSendEmail = true;
 
     return Classified.findById(message.classifiedId)
         .then(classified => {
             if (!classified) throw new EntityNotFoundError('Classified not found');
 
-            if(classified.advertiser._id.toString() === user._id.toString()) {                
+            if (classified.allowMessages === false) throw new Error('classified does not allow message sending');
+
+            if (classified.advertiser._id.toString() === user._id.toString()) {
                 throw new SendEmailToSelfError('Cannot send email to yourself');
             }
 
@@ -111,9 +115,16 @@ exports.send = function (message, user) {
                 to: to
             }));
         })
-        .then(result => {
+        .then(result => User.findById(to._id))
+        .then(advertiser => {
             message.url = message.url.replace('{key}', key);
-            return enquiryEmail.send(to, message.url);
+
+            if (advertiser.settings.receiveEmailNotifications === true) {
+                return enquiryEmail.send(to, message.url);
+            }
+            else {
+                return true;
+            }
         })
         .catch(error => { throw error; });
 };
@@ -199,9 +210,23 @@ exports.reply = function (message, user) {
             return reply;
         })
         .then(reply => {
+            return User.findById(reply.to._id)
+                .then(user => {
+                    return {
+                        reply: reply,
+                        recipient: user
+                    };
+                })
+                .catch(error => { throw error; });
+        })
+        .then(result => {        
             message.url = message.url.replace('{key}', message.key);
-            enquiryEmail.send(reply.to, message.url);
-            return reply;
+
+            if (result.recipient.settings.receiveEmailNotifications === true) {
+                enquiryEmail.send(result.reply.to, message.url);               
+            }         
+
+            return result.reply;
         })
         .catch(error => {
             throw error;

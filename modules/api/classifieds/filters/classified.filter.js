@@ -1,35 +1,43 @@
 'use strict';
 
 function ClassifiedFilter(req) {
-    var filter = {};
+    var filter = {
+        query: {},
+        sort: {},
+        skip: (req.query.skip * req.query.top) || 0,       
+        take: parseInt(req.query.top) || 30
+    };
+  
+    let sortParam = req.query.sort || 'created';
+    filter.sort[sortParam] = -1;
 
     if (req.query) {
         if (req.query.q) {
-            filter.title = { $regex: req.query.q, $options: 'i' };
+            filter.query.title = { $regex: req.query.q, $options: 'i' };
         }
 
         if (req.query.category) {
-            filter['category._id'] = req.query.category;
+            filter.query['category._id'] = req.query.category;
         }
 
         if (req.query.country) {
-            filter['country.code'] = parseInt(req.query.country);
+            filter.query['country.code'] = parseInt(req.query.country);
         }
 
         if (req.query.minPrice || req.query.maxPrice) {
-            filter['price.value'] = {};
+            filter.query['price.value'] = {};
         }
 
         if (req.query.minPrice) {
-            filter['price.value'].$gte = req.query.minPrice;
+            filter.query['price.value'].$gte = req.query.minPrice;
         }
 
         if (req.query.maxPrice) {
-            filter['price.value'].$lte = req.query.maxPrice;
+            filter.query['price.value'].$lte = req.query.maxPrice;
         }
 
         if (req.query.advertType) {
-            filter.advertType = req.query.advertType;
+            filter.query.advertType = req.query.advertType;
         }
     }
 
