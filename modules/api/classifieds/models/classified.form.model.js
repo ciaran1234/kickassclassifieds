@@ -1,6 +1,8 @@
 'use strict';
+var _ = require('lodash');
 
 function ClassifiedForm(model, user) {
+    console.log(model);
 
     this.title = model.title;
     this.description = model.description;   
@@ -29,8 +31,8 @@ function ClassifiedForm(model, user) {
     } : undefined;
 
 
-    this.hidePrice = model.hidePrice || false;
-    this.allowMessages = model.allowMessages || true;
+    this.hidePrice = _.isUndefined(model.hidePrice) ? false : model.hidePrice;
+    this.allowMessages = _.isUndefined(model.allowMessages) ? true : model.allowMessages;
 
     this.advertiser = {
         _id: user._id,

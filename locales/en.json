@@ -155,6 +155,20 @@
 					"required":  "Advertiser phone name is required",
 					"length": "Advertiser phone number must be between 4 and 15 characters"
 				}
+			},
+			"report": {
+				"id": {
+					"required": "Classified identifier is required",
+					"objectId": "Invalid Classified identifier provided"
+				},
+				"reason": {
+					"required": "Reason is required",
+					"length": "Max lenght of 100 characters for reason"
+				},
+				"information": {
+					"required": "Information is required",
+					"length": "Max lenght of 2000 characters for information"
+				}
 			}
 		},
 		"category": {
@@ -204,7 +218,8 @@
 				"required": "Message callback url is required",
 				"valid": "Invalid callback url provided"
 			},
-			"sendToSelf": "Cannot send an email to yourself"
+			"sendToSelf": "Cannot send an email to yourself",
+			"disabled": "Message sending has been disabled for this classified"
 		}
 	},
 	"security": {

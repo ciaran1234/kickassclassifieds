@@ -14,6 +14,7 @@ var Classified = mongoose.model('Classified');
 var EntityNotFoundError = require('../../core/errors/entityNotFound.error');
 var SendEmailToSelfError = require('../../core/errors/sendEmailToSelf.error');
 var User = mongoose.model('User');
+var MessageSendingDisabledError = require('../../core/errors/messageSendingDisabled.error');
 
 exports.get = function (key) {
     return client.lrangeAsync(key, 0, -1)
@@ -75,7 +76,7 @@ exports.send = function (message, user) {
         .then(classified => {
             if (!classified) throw new EntityNotFoundError('Classified not found');
 
-            if (classified.allowMessages === false) throw new Error('classified does not allow message sending');
+            if (classified.allowMessages === false) throw new MessageSendingDisabledError('classified does not allow message sending');
 
             if (classified.advertiser._id.toString() === user._id.toString()) {
                 throw new SendEmailToSelfError('Cannot send email to yourself');
@@ -117,6 +118,8 @@ exports.send = function (message, user) {
         })
         .then(result => User.findById(to._id))
         .then(advertiser => {
+            if(!advertiser || !advertiser.settings) return false;
+
             message.url = message.url.replace('{key}', key);
 
             if (advertiser.settings.receiveEmailNotifications === true) {

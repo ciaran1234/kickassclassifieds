@@ -2,6 +2,7 @@
 
 var mongoose = require('mongoose');
 var Classified = mongoose.model('Classified');
+var Category = mongoose.model('Category');
 var EntityNotFoundError = require('../../../core/errors/entityNotFound.error');
 var EntityValidationError = require('../../../core/errors/entityValidation.error');
 var ClassifiedForm = require('../models/classified.form.model');
@@ -17,7 +18,7 @@ exports.list = function (req, res) {
     if (req.user && req.user.wishlist) {
         favourites = req.user.wishlist;
     }
-  
+
     let filter = new ClassifiedFilter(req);
 
     let count = Classified.find(filter.query).count();
@@ -31,7 +32,8 @@ exports.list = function (req, res) {
             'title': 1,
             'image': { $arrayElemAt: ["$images", 0] },
             'imageCount': { $size: '$images' },
-            'price': 1,
+            'price': { $cond: { if: { '$eq': ['$hidePrice', true] }, then: undefined, else: '$price' } },
+            'hidePrice': 1,
             'created': 1,
             'updated': 1,
             'category': 1,
@@ -60,6 +62,7 @@ exports.get = function (req, res) {
         .then(classified => {
             if (!classified) return res.status(404).json();
 
+            classified.price = !classified.hidePrice ? classified.price : undefined;
             return res.status(200).json(classified);
         })
         .catch(error => {
@@ -115,11 +118,8 @@ exports.update = function (req, res) {
 };
 
 exports.delete = function (req, res) {
-    
     return Classified.findByIdAndRemove(req.params.id)
-        .then(result => {
-            console.log(result);
-
+        .then(result => {         
             if (!result) return res.status(404).json();
 
             return res.status(204).json();
@@ -198,4 +198,10 @@ exports.deleteImages = function (req, res) {
         .catch(error => {
             return res.status(400).json({ errors: { message: req.i18n.__(error.message) } });
         });
+};
+
+exports.report = function(req, res) {
+    console.log(req.body);
+
+    return res.status(200).json();
 };

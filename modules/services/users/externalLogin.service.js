@@ -69,6 +69,12 @@ var addExternalProvider = function (providerUserProfile, authenticatedId) {
                     //create new user from provider data
                     var user = new User(providerUserProfile);
 
+                    user.settings = {
+                        publicProfilePicture: true,
+                        receiveNewsletter: false,
+                        receiveEmailNotifications: true
+                    };
+
                     return User.generateRandomPassphrase().then(password => {
                         user.password = password;
                         user.emailConfirmed = true;

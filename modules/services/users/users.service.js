@@ -231,6 +231,7 @@ exports.getWishlist = function (user, filter) {
 exports.delete = function (user) {
     return User.findByIdAndRemove(user._id)
         .then(result => ExternalLogin.deleteMany({ '_id.userId': user._id }))
+        .then(result => Classified.deleteMany({ 'advertiser._id': user._id }))
         .then(r => { return true; })
         .catch(error => {            
             throw error;

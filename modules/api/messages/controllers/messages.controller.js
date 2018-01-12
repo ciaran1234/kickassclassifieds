@@ -10,12 +10,20 @@ bluebird.promisifyAll(redis.Multi.prototype);
 var client = redis.createClient(config.cache);
 var messageService = require('../../../services/messages/messages.service');
 var EntityNotFound = require('../../../core/errors/entityNotFound.error');
+var MessageSendingDisabledError = require('../../../core/errors/messageSendingDisabled.error');
 var SendEmailToSelfError = require('../../../core/errors/sendEmailToSelf.error');
 
 exports.post = function (req, res) {
     return messageService.send(req.body, req.user)
         .then(result => res.status(200).json())
         .catch(EntityNotFound, error => res.status(404).json({ errors: { message: req.i18n.__("http.codes.notFound") } }))
+        .catch(MessageSendingDisabledError, error => {
+            return res.status(400).json({
+                errors: {
+                    message: req.i18n.__('validation.message.disabled')
+                }
+            });
+        })
         .catch(SendEmailToSelfError, error => {
             return res.status(400).json({
                 errors: {
@@ -23,7 +31,9 @@ exports.post = function (req, res) {
                 }
             });
         })
-        .catch(error => res.status(500).json());
+        .catch(error => {           
+            return res.status(500).json({ errors: { message: req.i18n.__("http.codes.internalServerError") } });
+        });
 };
 
 exports.reply = function (req, res) {
