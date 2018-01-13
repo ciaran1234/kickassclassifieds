@@ -16,7 +16,7 @@ module.exports = {
     },
     port: 80,
     cache: {
-        host: 'localhost',
+        host: 'classified-redis.rzimio.0001.use1.cache.amazonaws.com',
         port: '6379'
     },
     app: {
