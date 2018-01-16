@@ -17,7 +17,21 @@ module.exports = {
     port: 80,
     cache: {
         host: 'classified-redis.rzimio.0001.use1.cache.amazonaws.com',
-        port: '6379'
+        port: '6379',
+        socket_keepalive: true,
+        retry_strategy: function (options) {
+            if (options.error && options.error.code === 'ECONNREFUSED') {
+                return new Error('The server refused the connection');
+            }
+            if (options.total_retry_time > 1000 * 60 * 60) {
+                return new Error('Retry time exhausted');
+            }
+            if (options.attempt > 10) {
+                return undefined;
+            }
+
+            return Math.min(options.attempt * 100, 3000);
+        }
     },
     app: {
         title: 'Kick Ass Classifieds'
@@ -58,7 +72,7 @@ module.exports = {
         clientSecret: process.env.PAYPAL_SECRET || 'CLIENT_SECRET',
         callbackURL: '/api/auth/paypal/callback',
         sandbox: true
-    },    
+    },
     cors: {
         enabled: true,
         allowedOrigins: ['http://localhost:4200']
