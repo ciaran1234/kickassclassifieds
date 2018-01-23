@@ -14,249 +14,183 @@ var Classified = mongoose.model('Classified');
 var EntityNotFoundError = require('../../core/errors/entityNotFound.error');
 var SendEmailToSelfError = require('../../core/errors/sendEmailToSelf.error');
 var User = mongoose.model('User');
+var Message = mongoose.model('Message');
 var MessageSendingDisabledError = require('../../core/errors/messageSendingDisabled.error');
 
-exports.get = function (key) {
-    return client.lrangeAsync(key, 0, -1)
-        .then(messages => {
-            if (messages.length === 0) throw new EntityNotFoundError('Message not found');
-
-            for (let i in messages) {
-                messages[i] = JSON.parse(messages[i]);
-            }
-
-            return messages;
+exports.get = function (id) {
+    return Message.findById(id)
+        .then(message => {
+            if (!message) throw new EntityNotFoundError('Message not found');
+            return message;
         })
         .catch(error => { throw error; });
 };
 
 exports.getSent = function (user) {
-    return client.lrangeAsync('messages:sent:' + user._id, 0, -1)
-        .then(messages => {
-            for (let i in messages) {
-                messages[i] = JSON.parse(messages[i]);
-            }
-
-            return messages;
+    return Message.aggregate()
+        .match({ 'sender._id': user._id })
+        .sort({ id: 1, 'messages.timestamp': -1 })
+        .project({
+            '_id': 1,
+            'subject': 1,
+            'sender': 1,
+            'recipient': 1,
+            'classifiedId': 1,
+            'timestamp': { $arrayElemAt: ["$messages.timestamp", -1] }
         })
-        .catch(error => {
-            throw error;
-        });
+        .then(messages => messages)
+        .catch(error => { throw error; });
 };
 
 exports.getReceived = function (user) {
-    return client.lrangeAsync('messages:received:' + user._id, 0, -1)
-        .then(messages => {
-            for (let i in messages) {
-                messages[i] = JSON.parse(messages[i]);
-            }
-
-            return messages;
+    return Message.aggregate()
+        .match({ 'recipient._id': user._id })
+        .sort({ id: 1, 'messages.timestamp': -1 })
+        .project({
+            '_id': 1,
+            'subject': 1,
+            'sender': 1,
+            'recipient': 1,
+            'classifiedId': 1,
+            'read': { $anyElementTrue: ["$messages.read"] },
+            'timestamp': { $arrayElemAt: ["$messages.timestamp", -1] }
         })
-        .catch(error => {
-            throw error;
-        });
+        .then(messages => messages)
+        .catch(error => { throw error; });
 };
 
 exports.send = function (message, user) {
-    let key;
-    let to;
-    let from = {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email
-    };
-
-    let timestamp = new Date();
-    timestamp.setDate(timestamp.getDate());
-    let canSendEmail = true;
+    let id;
+    let msg;
 
     return Classified.findById(message.classifiedId)
         .then(classified => {
+
             if (!classified) throw new EntityNotFoundError('Classified not found');
 
-            if (classified.allowMessages === false) throw new MessageSendingDisabledError('classified does not allow message sending');
+            if (classified.allowMessages === false) throw new MessageSendingDisabledError('Classified does not allow message sending');
 
             if (classified.advertiser._id.toString() === user._id.toString()) {
-                throw new SendEmailToSelfError('Cannot send email to yourself');
+                throw new SendEmailToSelfError('Cannot send message to yourself');
             }
 
-            to = {
-                _id: classified.advertiser._id,
-                firstName: classified.advertiser.firstName,
-                lastName: classified.advertiser.lastName,
-                email: classified.advertiser.email
-            };
-
-            key = 'message:from:' + from._id + ':to:' + to._id + ':id:' + guid.raw();
-
-            return client.lpushAsync('messages:sent:' + from._id, JSON.stringify({
-                key: key,
-                subject: message.subject,
-                timestamp: timestamp,
-                to: to
-            }));
-        })
-        .then(res => {
-            return client.lpushAsync('messages:received:' + to._id, JSON.stringify({
-                key: key,
-                subject: message.subject,
-                timestamp: timestamp,
-                from: from,
-                read: false
-            }));
-        })
-        .then(res => {
-            return client.rpushAsync(key, JSON.stringify({
-                subject: message.subject,
+            let messages = [];
+            messages.push({
                 body: message.body,
-                timestamp: timestamp,
-                from: from,
-                to: to
-            }));
-        })
-        .then(result => User.findById(to._id))
-        .then(advertiser => {
-            if(!advertiser || !advertiser.settings) return false;
+                sender: {
+                    _id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    profileImageUrl: user.settings.publicProfilePicture ? user.profileImageUrl : ''
+                },
+                recipient: {
+                    _id: classified.advertiser._id,
+                    firstName: classified.advertiser.firstName,
+                    lastName: classified.advertiser.lastName,
+                    email: classified.advertiser.email,
+                    profileImageUrl: classified.advertiser.profileImageUrl
+                },
+                read: false,
+                timestamp: Date.now()
+            });
 
-            message.url = message.url.replace('{key}', key);
+            return {
+                subject: message.subject,
+                sender: {
+                    _id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    profileImageUrl: user.settings.publicProfilePicture ? user.profileImageUrl : ''
+                },
+                recipient: {
+                    _id: classified.advertiser._id,
+                    firstName: classified.advertiser.firstName,
+                    lastName: classified.advertiser.lastName,
+                    email: classified.advertiser.email,
+                    profileImageUrl: classified.advertiser.profileImageUrl
+                },
+                classifiedId: classified._id,
+                messages: messages
+            };
+        })
+        .then(message => {
+            msg = new Message(message).save();
+            return msg;
+        })
+        .then(message => {
+            id = message._id;
+            return User.findById(message.recipient);
+        })
+        .then(advertiser => {
+            if (!advertiser || !advertiser.settings) return false;
+
+            message.url = message.url.replace('{key}', id);
 
             if (advertiser.settings.receiveEmailNotifications === true) {
-                return enquiryEmail.send(to, message.url);
+                enquiryEmail.send(advertiser, message.url);
+                return msg;
             }
             else {
-                return true;
+                return msg;
             }
         })
         .catch(error => { throw error; });
 };
 
 exports.reply = function (message, user) {
-    let timestamp = new Date();
-    timestamp.setDate(timestamp.getDate());
+    let recipient;
 
-    return client.lrangeAsync(message.key, 0, -1)
-        .then(messages => {
-            let m;
+    return Message.findById(message._id)
+        .then(msg => {
+            if (!msg) throw new EntityNotFoundError('Message not found');
 
-            for (let i in messages) {
-                m = JSON.parse(messages[i]);
+            recipient = msg.recipient._id !== user._id ? msg.recipient : msg.sender;
 
-                if (m.from._id !== user._id.toString()) {
-                    break;
-                }
-            }
-
-            return {
-                to: m.from,
-                from: {
+            msg.messages.push({
+                body: message.body,
+                sender: {
                     _id: user._id,
                     firstName: user.firstName,
                     lastName: user.lastName,
-                    email: user.email
+                    email: user.email,
+                    profileImageUrl: user.settings.publicProfilePicture ? user.profileImageUrl : ''
                 },
-                timestamp: timestamp,
-                subject: m.subject,
-                body: message.body,
-                count: m.length
-            };
+                recipient: recipient,
+                timestamp: Date.now(),
+                read: false
+            });
+
+            return msg;
         })
-        .then(reply => {
-            client.rpushAsync(message.key, JSON.stringify(reply));
-            return reply;
-        })
-        .then(reply => {
-            if (reply.count === 1) {
-                client.lpushAsync('messages:received:' + reply.to._id, JSON.stringify({
-                    key: message.key,
-                    subject: reply.subject,
-                    timestamp: timestamp,
-                    from: reply.from,
-                    read: false
-                }));
-            }
-            else {
-                //move the message in messages:received to top of list and mark it as unread
-                client.lrangeAsync('messages:received:' + reply.to._id, 0, -1)
-                    .then(messages => {
-                        let index = 0;
-
-                        for (let i in messages) {
-                            messages[i] = JSON.parse(messages[i]);
-
-                            if (messages[i].key === message.key) {
-                                index = i;
-                                break;
-                            }
-                        }
-
-                        return index;
-                    })
-                    .then(index => {
-                        return client.lsetAsync('messages:received:' + reply.to._id, index, '_deleted_');
-                    })
-                    .then(response => {
-                        return client.lremAsync('messages:received:' + reply.to._id, 1, '_deleted_');
-                    })
-                    .then(response => {
-                        return client.lpushAsync('messages:received:' + reply.to._id, JSON.stringify({
-                            key: message.key,
-                            subject: reply.subject,
-                            timestamp: timestamp,
-                            from: reply.from,
-                            read: false
-                        }));
-                    });
-            }
-
-            return reply;
-        })
-        .then(reply => {
-            return User.findById(reply.to._id)
+        .then(msg => msg.save())
+        .then(msg => {
+            return User.findById(recipient._id)
                 .then(user => {
                     return {
-                        reply: reply,
+                        reply: msg,
                         recipient: user
                     };
                 })
                 .catch(error => { throw error; });
         })
-        .then(result => {        
-            message.url = message.url.replace('{key}', message.key);
+        .then(result => {
+            message.url = message.url.replace('{key}', message._id);
 
-            if (result.recipient.settings.receiveEmailNotifications === true) {
-                enquiryEmail.send(result.reply.to, message.url);               
-            }         
+            if (result.recipient.settings.receiveEmailNotifications === true && result.recipient._id !== user._id) {
+                enquiryEmail.send(result.recipient, message.url);
+            }
 
             return result.reply;
         })
-        .catch(error => {
-            throw error;
-        });
+        .catch(error => { throw error; });
 };
 
-exports.markAsRead = function (key, user) {
-    return client.lrangeAsync('messages:received:' + user._id, 0, -1)
-        .then(messages => {
-            for (let i in messages) {
-                messages[i] = JSON.parse(messages[i]);
-
-                if (messages[i].key === key) {
-                    messages[i].read = true;
-                    return { message: messages[i], index: i };
-                }
-            }
-        })
-        .then(result => {
-            if (result) {
-                return client.lset('messages:received:' + user._id, result.index, JSON.stringify(result.message));
-            }
-
-            return null;
-        })
-        .then(result => {
-            return result;
-        })
+exports.markAsRead = function (id, user) {
+    return Message.findOneAndUpdate({ _id: id, 'messages.recipient._id': user._id, 'messages.sender._id': user._id }, {
+        $set: { 'messages.$.read': true }
+    })
+        .then(message => message)
         .catch(error => { throw error; });
 };

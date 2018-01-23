@@ -2,9 +2,12 @@
 
 module.exports = function MessageReplyValidator(req, res, next) {
     req.checkBody({
-        'key': {
+        '_id': {
             notEmpty: {
-                errorMessage: req.i18n.__('validation.message.key.required')
+                errorMessage: req.i18n.__('validation.message.id.required')
+            },
+            isValidObjectId: {
+                errorMessage: req.i18n.__('validation.message._id.objectId')
             }
         },
         'body': {
@@ -14,10 +17,10 @@ module.exports = function MessageReplyValidator(req, res, next) {
         },
         'url': {
             notEmpty: {
-                errorMessage: req.i18n.__("message.url.required"),
+                errorMessage: req.i18n.__("validation.message.url.required"),
             },
             isValidCallbackUrl: {
-                errorMessage: req.i18n.__("message.url.valid"),
+                errorMessage: req.i18n.__("validation.message.url.valid"),
             }
         }
     });

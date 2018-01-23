@@ -1,9 +1,7 @@
 'use strict';
 var _ = require('lodash');
 
-function ClassifiedForm(model, user) {
-    console.log(model);
-
+function ClassifiedForm(model, user) {  
     this.title = model.title;
     this.description = model.description;   
     this.advertType = model.advertType;

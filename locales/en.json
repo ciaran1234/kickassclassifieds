@@ -136,23 +136,23 @@
 			"region": {
 				"required": "Region/State is required",
 				"length": "Max length of 50 characters for region/state"
-			}			,
+			},
 			"advertiser": {
 				"firstName": {
-					"required":  "Advertiser first name is required",
+					"required": "Advertiser first name is required",
 					"length": "Max length of 40 characters for advertiser first name"
 				},
 				"lastName": {
-					"required":  "Advertiser first name is required",
+					"required": "Advertiser first name is required",
 					"length": "Max length of 40 characters for advertiser last name"
 				},
-				"email": {					
+				"email": {
 					"required": "Advertiser email is required",
 					"invalid": "Invalid advertiser email",
 					"length": "Max length of 256 characters for advertiser email"
 				},
 				"phoneNumber": {
-					"required":  "Advertiser phone name is required",
+					"required": "Advertiser phone name is required",
 					"length": "Advertiser phone number must be between 4 and 15 characters"
 				}
 			},
@@ -201,8 +201,9 @@
 			}
 		},
 		"message": {
-			"key": {
-				"required": "Message key is required"
+			"_id": {
+				"required": "Message id is required",
+				"objectId": "Invalid identifier provided"
 			},
 			"subject": {
 				"required": "Subject is required"
@@ -219,7 +220,31 @@
 				"valid": "Invalid callback url provided"
 			},
 			"sendToSelf": "Cannot send an email to yourself",
-			"disabled": "Message sending has been disabled for this classified"
+			"disabled": "Message sending has been disabled for this classified",
+			"recipient": {
+				"required": "Message recipient required",
+				"firstName": {
+					"required": "Message recipient first name required"
+				},
+				"lastName": {
+					"required": "Message recipient last name required"
+				},
+				"email": {
+					"required": "Message recipient email required"
+				}
+			},
+			"sender": {
+				"required": "Message sender required",
+				"firstName": {
+					"required": "Message sender first name required"
+				},
+				"lastName": {
+					"required": "Message sender last name required"
+				},
+				"email": {
+					"required": "Message sender email required"
+				}
+			}
 		}
 	},
 	"security": {

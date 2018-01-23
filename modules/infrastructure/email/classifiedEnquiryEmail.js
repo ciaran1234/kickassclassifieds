@@ -13,7 +13,7 @@ exports.send = function (user, callbackUrl, cb) {
         appName: config.app.title,
         callbackUrl: callbackUrl
     }, function (err, result) {
-        var transporter = nodemailer.createTransport(config.email.credentials);
+        var transporter = nodemailer.createTransport(config.email.credentials);  
         transporter.sendMail({
             from: config.email.applicationAddress,
             to: user.email,

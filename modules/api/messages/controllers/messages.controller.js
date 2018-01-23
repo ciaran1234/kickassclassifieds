@@ -15,7 +15,7 @@ var SendEmailToSelfError = require('../../../core/errors/sendEmailToSelf.error')
 
 exports.post = function (req, res) {
     return messageService.send(req.body, req.user)
-        .then(result => res.status(200).json())
+        .then(message => res.status(201).json(message))
         .catch(EntityNotFound, error => res.status(404).json({ errors: { message: req.i18n.__("http.codes.notFound") } }))
         .catch(MessageSendingDisabledError, error => {
             return res.status(400).json({
@@ -58,7 +58,7 @@ exports.sent = function (req, res) {
 
 exports.get = function (req, res) {
     return messageService.get(req.params.id)
-        .then(messages => res.status(200).json(messages))
+        .then(message => res.status(200).json(message))
         .catch(EntityNotFound => res.status(404).json())
         .catch(error => res.status(500).json());
 };
