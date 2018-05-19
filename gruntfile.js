@@ -14,6 +14,14 @@ module.exports = function (grunt) {
                 NODE_ENV: 'production'
             }
         },
+        express: {
+            server: {
+                options: {
+                  port: 3000,            
+                  bases: 'public'
+                }
+              }
+        },
         watch: {
             server: {
                 files: _.union(defaultAssets.gruntConfig, defaultAssets.allJS),
@@ -39,6 +47,9 @@ module.exports = function (grunt) {
                 options: {
                     logConcurrentOutput: true
                 }
+            },
+            live: {
+                tasks: ['express']              
             }
         },
         jshint: {
@@ -58,8 +69,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-concurrent');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-nodemon');
-    
+    grunt.loadNpmTasks('grunt-nodemon');   
+    grunt.loadNpmTasks('grunt-express')
+
     grunt.registerTask('default', ['env:dev', 'concurrent:default']);
-    grunt.registerTask('prod', ['env:prod', 'concurrent:default']);
+    grunt.registerTask('prod', ['env:prod', 'express']);
 }

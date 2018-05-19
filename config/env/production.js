@@ -14,9 +14,9 @@ module.exports = {
         },
         debug: false
     },
-    port: 80,
+    port: 3000,
     cache: {
-        host: 'classified-redis.rzimio.0001.use1.cache.amazonaws.com',
+        host: 'localhost',
         port: '6379',
         socket_keepalive: true,
         retry_strategy: function (options) {

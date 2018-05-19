@@ -202,6 +202,6 @@ exports.deleteImages = function (req, res) {
 
 exports.report = function(req, res) {
     console.log(req.body);
-
+    //TODO: Added email verification of reported ads
     return res.status(200).json();
 };
